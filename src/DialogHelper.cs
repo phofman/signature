@@ -1,4 +1,5 @@
-﻿using System.Windows.Forms;
+﻿using System.Diagnostics;
+using System.Windows.Forms;
 
 namespace CodeTitans.Signature
 {
@@ -39,6 +40,17 @@ namespace CodeTitans.Signature
             openFile.CheckPathExists = true;
 
             return openFile;
+        }
+
+        /// <summary>
+        /// Opens a default web-browser with specified URL.
+        /// </summary>
+        public static void StartURL(string url)
+        {
+            if (string.IsNullOrEmpty(url) || !(url.StartsWith("http://") || url.StartsWith("https://")))
+                return;
+
+            Process.Start(url);
         }
     }
 }
