@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using System.IO;
 using System.Windows.Forms;
 
 namespace CodeTitans.Signature
@@ -41,6 +42,48 @@ namespace CodeTitans.Signature
 
             return openFile;
         }
+
+        /// <summary>
+        /// Opens Windows Explorer window with specified path.
+        /// </summary>
+        public static void StartExplorer(string path)
+        {
+            if (string.IsNullOrEmpty(path))
+                return;
+
+            // if specified directory doesn't exist, create it:
+            try
+            {
+                if (!Directory.Exists(path))
+                    Directory.CreateDirectory(path);
+            }
+            catch
+            {
+            }
+
+            // open Explorer window with this folder:
+            Process.Start("Explorer.exe", "/e,\"" + path + "\"");
+        }
+
+        /// <summary>
+        /// Opens Windows Explorer window with specified file selected.
+        /// </summary>
+        public static void StartExplorerForFile(string path)
+        {
+            if (string.IsNullOrEmpty(path))
+                return;
+
+            // if file doesn't exits, try to open its parent folder:
+            if (!File.Exists(path))
+            {
+                StartExplorer(Path.GetDirectoryName(path));
+                return;
+            }
+
+            // open Explorer window with specified file selected:
+            Process.Start("Explorer.exe", "/select,\"" + path + "\"");
+        }
+
 
         /// <summary>
         /// Opens a default web-browser with specified URL.

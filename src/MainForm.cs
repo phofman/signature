@@ -21,6 +21,16 @@ namespace CodeTitans.Signature
             FillTimestampServers();
         }
 
+        private bool ShowOpenResult
+        {
+            get { return bttOpenResult.Visible; }
+            set
+            {
+                bttOpenResult.Visible = value;
+                openResultFolderMenuItem.Visible = value;
+            }
+        }
+
         private void btnClose_Click(object sender, EventArgs e)
         {
             Close();
@@ -97,6 +107,7 @@ namespace CodeTitans.Signature
             if (dialog.ShowDialog() == DialogResult.OK)
             {
                 txtBinaryPath.Text = dialog.FileName;
+                ShowOpenResult = false;
             }
         }
 
@@ -111,6 +122,8 @@ namespace CodeTitans.Signature
 
         private void btnSign_Click(object sender, EventArgs e)
         {
+            ShowOpenResult = false;
+
             if (string.IsNullOrEmpty(txtBinaryPath.Text) || !File.Exists(txtBinaryPath.Text))
             {
                 MessageBox.Show("You must specify valid binary to sign", AppTitle, MessageBoxButtons.OK, MessageBoxIcon.Error);
@@ -142,6 +155,8 @@ namespace CodeTitans.Signature
             {
                 SignerHelper.Sign(txtBinaryPath.Text, null, txtCertificatePath.Text, txtCertificatePassword.Text, timestampServer, OnFinished);
             }
+
+            ShowOpenResult = true;
         }
 
         private void OnFinished(ToolRunnerEventArgs e)
@@ -164,6 +179,11 @@ namespace CodeTitans.Signature
         {
             var aboutForm = new AboutForm();
             aboutForm.ShowDialog();
+        }
+
+        private void bttOpenResult_Click(object sender, EventArgs e)
+        {
+            DialogHelper.StartExplorerForFile(txtBinaryPath.Text);
         }
     }
 }
