@@ -9,6 +9,8 @@ namespace CodeTitans.Signature
 {
     public partial class MainForm : Form
     {
+        private const string AppTitle = "CodeTitans Signature";
+
         public MainForm()
         {
             InitializeComponent();
@@ -74,6 +76,7 @@ namespace CodeTitans.Signature
             txtCertificatePath.Enabled = !enabled;
             txtCertificatePassword.Enabled = !enabled;
             btnCertificateLocation.Enabled = !enabled;
+            findCertificateMenuItem.Enabled = !enabled;
 
             if (ActiveControl == radioInstalled || ActiveControl == radioPfx)
             {
@@ -110,14 +113,14 @@ namespace CodeTitans.Signature
         {
             if (string.IsNullOrEmpty(txtBinaryPath.Text) || !File.Exists(txtBinaryPath.Text))
             {
-                MessageBox.Show("You must specify valid binary to sign");
+                MessageBox.Show("You must specify valid binary to sign", AppTitle, MessageBoxButtons.OK, MessageBoxIcon.Error);
                 ActiveControl = txtBinaryPath;
                 return;
             }
 
             if (txtCertificatePath.Enabled && (string.IsNullOrEmpty(txtCertificatePath.Text) || !File.Exists(txtCertificatePath.Text)))
             {
-                MessageBox.Show("You must specify valid certificate PFX file");
+                MessageBox.Show("You must specify valid certificate PFX file", AppTitle, MessageBoxButtons.OK, MessageBoxIcon.Error);
                 ActiveControl = txtCertificatePath;
                 return;
             }
@@ -125,7 +128,7 @@ namespace CodeTitans.Signature
             var certificate = cmbCertificates.SelectedItem != null ? ((ComboBoxItem) cmbCertificates.SelectedItem).Data as X509Certificate2 : null;
             if (cmbCertificates.Enabled && certificate == null)
             {
-                MessageBox.Show("You must select a valid certificate");
+                MessageBox.Show("You must select a valid certificate", AppTitle, MessageBoxButtons.OK, MessageBoxIcon.Error);
                 ActiveControl = cmbCertificates;
                 return;
             }
@@ -150,6 +153,17 @@ namespace CodeTitans.Signature
             }
 
             txtLog.Text = string.Concat(e.Output, string.IsNullOrEmpty(e.Output) ? string.Empty : Environment.NewLine, e.Error);
+        }
+
+        private void homeLink_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
+        {
+            DialogHelper.StartURL("http://www.codetitans.pl");
+        }
+
+        private void aboutMenuItem_Click(object sender, EventArgs e)
+        {
+            var aboutForm = new AboutForm();
+            aboutForm.ShowDialog();
         }
     }
 }

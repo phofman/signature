@@ -48,7 +48,19 @@
             this.label1 = new System.Windows.Forms.Label();
             this.btnClose = new System.Windows.Forms.Button();
             this.btnSign = new System.Windows.Forms.Button();
+            this.homeLink = new System.Windows.Forms.LinkLabel();
+            this.mainMenu = new System.Windows.Forms.MenuStrip();
+            this.fileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.helpToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.openBinaryMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.findCertificateMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripMenuItem1 = new System.Windows.Forms.ToolStripSeparator();
+            this.exitToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripMenuItem2 = new System.Windows.Forms.ToolStripSeparator();
+            this.signToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.aboutMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.groupBox1.SuspendLayout();
+            this.mainMenu.SuspendLayout();
             this.SuspendLayout();
             // 
             // groupBox1
@@ -73,9 +85,9 @@
             this.groupBox1.Controls.Add(this.btnBinaryLocation);
             this.groupBox1.Controls.Add(this.txtBinaryPath);
             this.groupBox1.Controls.Add(this.label1);
-            this.groupBox1.Location = new System.Drawing.Point(12, 12);
+            this.groupBox1.Location = new System.Drawing.Point(12, 27);
             this.groupBox1.Name = "groupBox1";
-            this.groupBox1.Size = new System.Drawing.Size(859, 453);
+            this.groupBox1.Size = new System.Drawing.Size(859, 438);
             this.groupBox1.TabIndex = 0;
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "Properties";
@@ -90,7 +102,7 @@
             this.txtLog.Name = "txtLog";
             this.txtLog.ReadOnly = true;
             this.txtLog.ScrollBars = System.Windows.Forms.ScrollBars.Both;
-            this.txtLog.Size = new System.Drawing.Size(824, 174);
+            this.txtLog.Size = new System.Drawing.Size(824, 159);
             this.txtLog.TabIndex = 16;
             // 
             // label6
@@ -257,7 +269,7 @@
             this.btnClose.Location = new System.Drawing.Point(796, 471);
             this.btnClose.Name = "btnClose";
             this.btnClose.Size = new System.Drawing.Size(75, 23);
-            this.btnClose.TabIndex = 2;
+            this.btnClose.TabIndex = 3;
             this.btnClose.Text = "&Close";
             this.btnClose.UseVisualStyleBackColor = true;
             this.btnClose.Click += new System.EventHandler(this.btnClose_Click);
@@ -268,10 +280,103 @@
             this.btnSign.Location = new System.Drawing.Point(660, 471);
             this.btnSign.Name = "btnSign";
             this.btnSign.Size = new System.Drawing.Size(130, 23);
-            this.btnSign.TabIndex = 1;
+            this.btnSign.TabIndex = 2;
             this.btnSign.Text = "&Sign";
             this.btnSign.UseVisualStyleBackColor = true;
             this.btnSign.Click += new System.EventHandler(this.btnSign_Click);
+            // 
+            // homeLink
+            // 
+            this.homeLink.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.homeLink.AutoSize = true;
+            this.homeLink.Location = new System.Drawing.Point(12, 476);
+            this.homeLink.Name = "homeLink";
+            this.homeLink.Size = new System.Drawing.Size(94, 13);
+            this.homeLink.TabIndex = 1;
+            this.homeLink.TabStop = true;
+            this.homeLink.Text = "www.codetitans.pl";
+            this.homeLink.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this.homeLink_LinkClicked);
+            // 
+            // mainMenu
+            // 
+            this.mainMenu.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.fileToolStripMenuItem,
+            this.helpToolStripMenuItem});
+            this.mainMenu.Location = new System.Drawing.Point(0, 0);
+            this.mainMenu.Name = "mainMenu";
+            this.mainMenu.Size = new System.Drawing.Size(883, 24);
+            this.mainMenu.TabIndex = 4;
+            this.mainMenu.Text = "menuStrip1";
+            // 
+            // fileToolStripMenuItem
+            // 
+            this.fileToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.openBinaryMenuItem,
+            this.findCertificateMenuItem,
+            this.toolStripMenuItem1,
+            this.signToolStripMenuItem,
+            this.toolStripMenuItem2,
+            this.exitToolStripMenuItem});
+            this.fileToolStripMenuItem.Name = "fileToolStripMenuItem";
+            this.fileToolStripMenuItem.Size = new System.Drawing.Size(37, 20);
+            this.fileToolStripMenuItem.Text = "&File";
+            // 
+            // helpToolStripMenuItem
+            // 
+            this.helpToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.aboutMenuItem});
+            this.helpToolStripMenuItem.Name = "helpToolStripMenuItem";
+            this.helpToolStripMenuItem.Size = new System.Drawing.Size(44, 20);
+            this.helpToolStripMenuItem.Text = "&Help";
+            // 
+            // openBinaryMenuItem
+            // 
+            this.openBinaryMenuItem.Name = "openBinaryMenuItem";
+            this.openBinaryMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.O)));
+            this.openBinaryMenuItem.Size = new System.Drawing.Size(226, 22);
+            this.openBinaryMenuItem.Text = "Open &binary...";
+            this.openBinaryMenuItem.Click += new System.EventHandler(this.btnBinaryLocation_Click);
+            // 
+            // findCertificateMenuItem
+            // 
+            this.findCertificateMenuItem.Name = "findCertificateMenuItem";
+            this.findCertificateMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.C)));
+            this.findCertificateMenuItem.Size = new System.Drawing.Size(226, 22);
+            this.findCertificateMenuItem.Text = "Find PFX certificate...";
+            this.findCertificateMenuItem.Click += new System.EventHandler(this.btnCertificateLocation_Click);
+            // 
+            // toolStripMenuItem1
+            // 
+            this.toolStripMenuItem1.Name = "toolStripMenuItem1";
+            this.toolStripMenuItem1.Size = new System.Drawing.Size(223, 6);
+            // 
+            // exitToolStripMenuItem
+            // 
+            this.exitToolStripMenuItem.Name = "exitToolStripMenuItem";
+            this.exitToolStripMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Alt | System.Windows.Forms.Keys.F4)));
+            this.exitToolStripMenuItem.Size = new System.Drawing.Size(226, 22);
+            this.exitToolStripMenuItem.Text = "&Exit";
+            this.exitToolStripMenuItem.Click += new System.EventHandler(this.btnClose_Click);
+            // 
+            // toolStripMenuItem2
+            // 
+            this.toolStripMenuItem2.Name = "toolStripMenuItem2";
+            this.toolStripMenuItem2.Size = new System.Drawing.Size(223, 6);
+            // 
+            // signToolStripMenuItem
+            // 
+            this.signToolStripMenuItem.Name = "signToolStripMenuItem";
+            this.signToolStripMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.S)));
+            this.signToolStripMenuItem.Size = new System.Drawing.Size(226, 22);
+            this.signToolStripMenuItem.Text = "Sign";
+            this.signToolStripMenuItem.Click += new System.EventHandler(this.btnSign_Click);
+            // 
+            // aboutMenuItem
+            // 
+            this.aboutMenuItem.Name = "aboutMenuItem";
+            this.aboutMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.aboutMenuItem.Text = "&About...";
+            this.aboutMenuItem.Click += new System.EventHandler(this.aboutMenuItem_Click);
             // 
             // MainForm
             // 
@@ -280,18 +385,24 @@
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.CancelButton = this.btnClose;
             this.ClientSize = new System.Drawing.Size(883, 506);
+            this.Controls.Add(this.homeLink);
             this.Controls.Add(this.btnSign);
             this.Controls.Add(this.btnClose);
             this.Controls.Add(this.groupBox1);
+            this.Controls.Add(this.mainMenu);
+            this.MainMenuStrip = this.mainMenu;
             this.MaximizeBox = false;
             this.MinimizeBox = false;
             this.Name = "MainForm";
             this.ShowIcon = false;
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
-            this.Text = "CodeTitans Binary Signer";
+            this.Text = "CodeTitans Binary Signature";
             this.groupBox1.ResumeLayout(false);
             this.groupBox1.PerformLayout();
+            this.mainMenu.ResumeLayout(false);
+            this.mainMenu.PerformLayout();
             this.ResumeLayout(false);
+            this.PerformLayout();
 
         }
 
@@ -317,6 +428,17 @@
         private System.Windows.Forms.TextBox txtCertificateFilter;
         private System.Windows.Forms.Label label6;
         private System.Windows.Forms.TextBox txtLog;
+        private System.Windows.Forms.LinkLabel homeLink;
+        private System.Windows.Forms.MenuStrip mainMenu;
+        private System.Windows.Forms.ToolStripMenuItem fileToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem helpToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem openBinaryMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem findCertificateMenuItem;
+        private System.Windows.Forms.ToolStripSeparator toolStripMenuItem1;
+        private System.Windows.Forms.ToolStripMenuItem exitToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem signToolStripMenuItem;
+        private System.Windows.Forms.ToolStripSeparator toolStripMenuItem2;
+        private System.Windows.Forms.ToolStripMenuItem aboutMenuItem;
     }
 }
 
