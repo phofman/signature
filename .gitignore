@@ -1,0 +1,10 @@
+
+# Build temporary folders
+
+src/bin/
+src/obj/
+
+
+# User configuration files
+Signature.v12.suo
+
