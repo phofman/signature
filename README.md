@@ -16,7 +16,14 @@ Picture worth more than a thousand words.
 
 1. name the binary to sign (Ctrl+O)
 2. select certificate (by using filter to find the installed one or by specifying path to .pfx file and password)
-3. click [Sign]
+3. click **Sign** button (Ctrl+S)
+4. navigate to result (Ctrl+R) 
+
+# Requirements
+Microsoft .NET Framework 4.5
+
+# Download
+Latest compiled version of this tool is available at '[Releases](https://github.com/phofman/signature/releases/latest)' section.
 
 # Contribution
 Feel free to fire a feature request using '[Issues](https://github.com/phofman/signature/issues)' panel and I will try to add it for benefit of all.
