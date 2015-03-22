@@ -37,7 +37,7 @@ namespace CodeTitans.Signature
         /// </summary>
         public static IEnumerable<string> LoadTimestampServers()
         {
-            return new[] { "http://time.certum.pl", "http://timestamp.verisign.com/scripts/timstamp.dll" };
+            return new[] { "http://time.certum.pl", "http://timestamp.verisign.com/scripts/timstamp.dll", "http://timestamp.comodoca.com/authenticode" };
         }
     }
 }
