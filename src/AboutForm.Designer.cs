@@ -32,13 +32,14 @@
             this.lblCodeTitans = new System.Windows.Forms.Label();
             this.bttClose = new System.Windows.Forms.Button();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
-            this.label1 = new System.Windows.Forms.Label();
-            this.projectLink = new System.Windows.Forms.LinkLabel();
-            this.twitterLink = new System.Windows.Forms.LinkLabel();
-            this.label2 = new System.Windows.Forms.Label();
-            this.label3 = new System.Windows.Forms.Label();
             this.issuesLink = new System.Windows.Forms.LinkLabel();
+            this.label3 = new System.Windows.Forms.Label();
+            this.label2 = new System.Windows.Forms.Label();
+            this.twitterLink = new System.Windows.Forms.LinkLabel();
+            this.projectLink = new System.Windows.Forms.LinkLabel();
+            this.label1 = new System.Windows.Forms.Label();
             this.homeLink = new System.Windows.Forms.LinkLabel();
+            this.lblVersion = new System.Windows.Forms.Label();
             this.panel1.SuspendLayout();
             this.groupBox1.SuspendLayout();
             this.SuspendLayout();
@@ -49,6 +50,7 @@
             | System.Windows.Forms.AnchorStyles.Right)));
             this.panel1.BackColor = System.Drawing.Color.White;
             this.panel1.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.panel1.Controls.Add(this.lblVersion);
             this.panel1.Controls.Add(this.lblCodeTitans);
             this.panel1.Location = new System.Drawing.Point(-2, -3);
             this.panel1.Name = "panel1";
@@ -95,25 +97,34 @@
             this.groupBox1.TabIndex = 2;
             this.groupBox1.TabStop = false;
             // 
-            // label1
+            // issuesLink
             // 
-            this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(19, 26);
-            this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(202, 13);
-            this.label1.TabIndex = 0;
-            this.label1.Text = "This is an open-source project created by";
+            this.issuesLink.AutoSize = true;
+            this.issuesLink.Location = new System.Drawing.Point(269, 50);
+            this.issuesLink.Name = "issuesLink";
+            this.issuesLink.Size = new System.Drawing.Size(64, 13);
+            this.issuesLink.TabIndex = 5;
+            this.issuesLink.TabStop = true;
+            this.issuesLink.Text = "bug-tracker.";
+            this.issuesLink.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this.issuesLink_LinkClicked);
             // 
-            // projectLink
+            // label3
             // 
-            this.projectLink.AutoSize = true;
-            this.projectLink.Location = new System.Drawing.Point(160, 50);
-            this.projectLink.Name = "projectLink";
-            this.projectLink.Size = new System.Drawing.Size(28, 13);
-            this.projectLink.TabIndex = 1;
-            this.projectLink.TabStop = true;
-            this.projectLink.Text = "here";
-            this.projectLink.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this.projectLink_LinkClicked);
+            this.label3.AutoSize = true;
+            this.label3.Location = new System.Drawing.Point(192, 50);
+            this.label3.Name = "label3";
+            this.label3.Size = new System.Drawing.Size(75, 13);
+            this.label3.TabIndex = 4;
+            this.label3.Text = "with the public";
+            // 
+            // label2
+            // 
+            this.label2.AutoSize = true;
+            this.label2.Location = new System.Drawing.Point(19, 50);
+            this.label2.Name = "label2";
+            this.label2.Size = new System.Drawing.Size(140, 13);
+            this.label2.TabIndex = 3;
+            this.label2.Text = "Full source-code is available";
             // 
             // twitterLink
             // 
@@ -126,34 +137,25 @@
             this.twitterLink.Text = "Paweł Hofman (@CodeTitans).";
             this.twitterLink.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this.twitterLink_LinkClicked);
             // 
-            // label2
+            // projectLink
             // 
-            this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(19, 50);
-            this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(140, 13);
-            this.label2.TabIndex = 3;
-            this.label2.Text = "Full source-code is available";
+            this.projectLink.AutoSize = true;
+            this.projectLink.Location = new System.Drawing.Point(160, 50);
+            this.projectLink.Name = "projectLink";
+            this.projectLink.Size = new System.Drawing.Size(28, 13);
+            this.projectLink.TabIndex = 1;
+            this.projectLink.TabStop = true;
+            this.projectLink.Text = "here";
+            this.projectLink.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this.projectLink_LinkClicked);
             // 
-            // label3
+            // label1
             // 
-            this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(192, 50);
-            this.label3.Name = "label3";
-            this.label3.Size = new System.Drawing.Size(75, 13);
-            this.label3.TabIndex = 4;
-            this.label3.Text = "with the public";
-            // 
-            // issuesLink
-            // 
-            this.issuesLink.AutoSize = true;
-            this.issuesLink.Location = new System.Drawing.Point(269, 50);
-            this.issuesLink.Name = "issuesLink";
-            this.issuesLink.Size = new System.Drawing.Size(64, 13);
-            this.issuesLink.TabIndex = 5;
-            this.issuesLink.TabStop = true;
-            this.issuesLink.Text = "bug-tracker.";
-            this.issuesLink.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this.issuesLink_LinkClicked);
+            this.label1.AutoSize = true;
+            this.label1.Location = new System.Drawing.Point(19, 26);
+            this.label1.Name = "label1";
+            this.label1.Size = new System.Drawing.Size(202, 13);
+            this.label1.TabIndex = 0;
+            this.label1.Text = "This is an open-source project created by";
             // 
             // homeLink
             // 
@@ -165,6 +167,16 @@
             this.homeLink.TabStop = true;
             this.homeLink.Text = "www.codetitans.pl";
             this.homeLink.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this.homeLink_LinkClicked);
+            // 
+            // lblVersion
+            // 
+            this.lblVersion.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this.lblVersion.Location = new System.Drawing.Point(392, 88);
+            this.lblVersion.Name = "lblVersion";
+            this.lblVersion.Size = new System.Drawing.Size(100, 23);
+            this.lblVersion.TabIndex = 1;
+            this.lblVersion.Text = "-";
+            this.lblVersion.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             // 
             // AboutForm
             // 
@@ -206,5 +218,6 @@
         private System.Windows.Forms.LinkLabel projectLink;
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.LinkLabel homeLink;
+        private System.Windows.Forms.Label lblVersion;
     }
 }

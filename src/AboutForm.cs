@@ -1,4 +1,5 @@
-﻿using System.Windows.Forms;
+﻿using System.Reflection;
+using System.Windows.Forms;
 
 namespace CodeTitans.Signature
 {
@@ -7,6 +8,14 @@ namespace CodeTitans.Signature
         public AboutForm()
         {
             InitializeComponent();
+
+            lblVersion.Text = "v" + GetVersion();
+        }
+
+        private string GetVersion()
+        {
+            var assembly = Assembly.GetExecutingAssembly();
+            return assembly.GetName().Version.ToString();
         }
 
         private void homeLink_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
