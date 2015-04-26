@@ -11,6 +11,9 @@ namespace CodeTitans.Signature
     {
         private const string AppTitle = "CodeTitans Signature";
 
+        private OpenFileDialog _openBinaryDialog;
+        private OpenFileDialog _openCertDialog;
+
         public MainForm()
         {
             InitializeComponent();
@@ -103,20 +106,24 @@ namespace CodeTitans.Signature
 
         private void btnBinaryLocation_Click(object sender, EventArgs e)
         {
-            var dialog = DialogHelper.OpenBinaryFile("Binary Files");
-            if (dialog.ShowDialog() == DialogResult.OK)
+            if (_openBinaryDialog == null)
+                _openBinaryDialog = DialogHelper.OpenBinaryFile("Binary Files");
+
+            if (_openBinaryDialog.ShowDialog() == DialogResult.OK)
             {
-                txtBinaryPath.Text = dialog.FileName;
+                txtBinaryPath.Text = _openBinaryDialog.FileName;
                 ShowOpenResult = false;
             }
         }
 
         private void btnCertificateLocation_Click(object sender, EventArgs e)
         {
-            var dialog = DialogHelper.OpenCertificateFile("Certificate Files");
-            if (dialog.ShowDialog() == DialogResult.OK)
+            if (_openCertDialog == null)
+                _openCertDialog = DialogHelper.OpenCertificateFile("Certificate Files");
+
+            if (_openCertDialog.ShowDialog() == DialogResult.OK)
             {
-                txtCertificatePath.Text = dialog.FileName;
+                txtCertificatePath.Text = _openCertDialog.FileName;
             }
         }
 
