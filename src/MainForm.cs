@@ -22,6 +22,50 @@ namespace CodeTitans.Signature
             txtCertificateFilter.Text = "Open Source Developer";
 
             FillTimestampServers();
+
+            // allow file drops on that application:
+            AllowDrop = true;
+            DragEnter += OnFileDropEnter;
+            DragDrop += OnFileDropDone;
+        }
+
+        private void OnFileDropDone(object sender, DragEventArgs e)
+        {
+            string[] filePaths = e.Data.GetData(DataFormats.FileDrop) as string[];
+
+            if (filePaths != null)
+            {
+                foreach (var name in filePaths)
+                {
+                    if (string.IsNullOrEmpty(name))
+                        continue;
+
+                    if (name.EndsWith(".pfx", StringComparison.OrdinalIgnoreCase))
+                        SetCertificateFromFilePath(name);
+                    else
+                        SetBinaryFromFilePath(name);
+                }
+            }
+        }
+
+        private void SetCertificateFromFilePath(string name)
+        {
+            radioPfx.Checked = true;
+            txtCertificatePath.Text = name;
+            ActiveControl = txtCertificatePassword;
+        }
+
+        private void SetBinaryFromFilePath(string name)
+        {
+            txtBinaryPath.Text = name;
+        }
+
+        private void OnFileDropEnter(object sender, DragEventArgs e)
+        {
+            if (e.Data.GetDataPresent(DataFormats.FileDrop))
+            {
+                e.Effect = DragDropEffects.Copy;
+            }
         }
 
         private bool ShowOpenResult

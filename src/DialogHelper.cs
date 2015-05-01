@@ -84,7 +84,6 @@ namespace CodeTitans.Signature
             Process.Start("Explorer.exe", "/select,\"" + path + "\"");
         }
 
-
         /// <summary>
         /// Opens a default web-browser with specified URL.
         /// </summary>
