@@ -1,0 +1,70 @@
+#---------------------------------#
+#   Project Build Configuration   #
+#---------------------------------#
+
+# version format
+version: 1.1.{build}
+
+# branches to build
+branches:
+  only:
+    - master
+    - develop
+
+# do build, when tags pushed (GitHub only)
+skip_tags: false
+
+# fetch repository as zip archive
+shallow_clone: true
+
+#---------------------------------#
+#    Environment Configuration    #
+#---------------------------------#
+
+# environment variables
+environment:
+  BUILD_TYPE: ci
+
+#---------------------------------#
+#       Build Configuration       #
+#---------------------------------#
+
+# build platforms
+platform: Any CPU
+
+# build configuration
+configuration: Release
+
+build:
+  project: Signature.sln
+  parallel: true
+  verbosity: normal
+
+# create output ZIP (absolute paths are ignored in produced outcome)
+after_build:
+  7z a Signature-bin.zip %APPVEYOR_BUILD_FOLDER%\src\bin\$(configuration)\Signature.exe
+
+test: off
+
+#---------------------------------#
+#      Artifacts Configuration    #
+#---------------------------------#
+
+artifacts:
+  - path: Signature-bin.zip
+
+#---------------------------------#
+#     Deployment Configuration    #
+#---------------------------------#
+deploy:
+  # Deploy to GitHub Releases
+  - provider: GitHub
+    release: v$(appveyor_build_version)
+    draft: false
+    prerelease: false
+    description: 'Official release v$(appveyor_build_version) of the **CodeTitans Signature** utility'
+    on:
+      branch: master
+      appveyor_repo_tag: true
+
+
