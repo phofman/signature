@@ -1,6 +1,8 @@
 # CodeTitans Signature Project
 Utility tool to help digitally sign applications (binaries) on Windows.
 
+[![Build status](https://ci.appveyor.com/api/projects/status/64t2qdfp8q72b5yu?svg=true)](https://ci.appveyor.com/project/phofman/signature)
+
 # Overview
 As an author of any command-line tool, driver or Visual Studio plugin it might be required to confirm its origin by putting a digital signature inside. Unfortunatelly its not as easy as could be on Windows and this utility tries to fill the gap. It provides an easy-to-use UI to let specify the binary and certificate (installed or from .pfx file) to complete the process.
 
