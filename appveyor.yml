@@ -42,7 +42,7 @@ build:
 
 # create output ZIP (absolute paths are ignored in produced outcome)
 after_build:
-  7z a Signature-bin.zip %APPVEYOR_BUILD_FOLDER%\src\bin\$(configuration)\Signature.exe
+  7z a Signature-bin.zip %APPVEYOR_BUILD_FOLDER%\src\bin\%CONFIGURATION%\Signature.exe
 
 test: off
 
