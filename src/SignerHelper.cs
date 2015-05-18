@@ -4,6 +4,7 @@ using System.IO;
 using System.IO.Packaging;
 using System.Security.Cryptography.X509Certificates;
 using CodeTitans.Signature.Tools;
+using System.IO.Compression;
 
 namespace CodeTitans.Signature
 {
@@ -40,11 +41,33 @@ namespace CodeTitans.Signature
                     }
                 }
 
+                SignVsixContent(binaryPath, certificate);
                 SignVsix(binaryPath, certificate, finishAction);
                 return;
             }
 
             SignBinary(binaryPath, certificate != null ? certificate.Thumbprint : null, certificatePath, certificatePassword, timestampServer, finishAction);
+        }
+
+        private static void SignVsixContent(string binaryPath, X509Certificate2 certificate)
+        {
+            // Step 1: rename vsix to zip
+            string zipPackagePath = RenameExtention(binaryPath, ".zip");
+
+            // Step 2: extract files and delete the zip file
+            string fileDir = Path.GetDirectoryName(binaryPath);
+            string fileName = Path.GetFileNameWithoutExtension(binaryPath);
+            string unZippedDir = Path.Combine(fileDir, fileName);
+            ZipFile.ExtractToDirectory(zipPackagePath, unZippedDir);
+            File.Delete(zipPackagePath);
+
+            // Step 3: sign all extracted files
+
+            // Step 4: Zip the extracted files
+            ZipFile.CreateFromDirectory(unZippedDir, zipPackagePath, CompressionLevel.NoCompression, false);
+
+            // Step 5: Rename zip file to vsix
+            string vsixPackagePath = RenameExtention(zipPackagePath, ".vsix");
         }
 
         private static void SignVsix(string vsixPackagePath, X509Certificate2 certificate, Action<ToolRunnerEventArgs> finishAction)
@@ -77,6 +100,15 @@ namespace CodeTitans.Signature
                     return;
                 }
 
+                if (ValidateSignatures(package))
+                {
+                    System.Windows.Forms.MessageBox.Show("The signing completed successfully.", "Extension Signing Complete");
+                }
+                else
+                {
+                    System.Windows.Forms.MessageBox.Show("The digital signature is invalid, there may have been a problem with the signing process.", "Invalid Signature");
+                }
+
                 if (finishAction != null)
                     finishAction(new ToolRunnerEventArgs(0, "Signing completed", null));
             }
@@ -95,6 +127,30 @@ namespace CodeTitans.Signature
             };
 
             runner.ExecuteAsync();
+        }
+
+        private static bool ValidateSignatures(Package package)
+        {
+            var signatureManager = new PackageDigitalSignatureManager(package);
+            bool isSigned = signatureManager.IsSigned;
+            var verifyResult = signatureManager.VerifySignatures(true);
+            return isSigned && verifyResult == VerifyResult.Success;
+        }
+
+        private static string RenameExtention(string filePath, string toExtension)
+        {
+            string fileDir = Path.GetDirectoryName(filePath);
+            string fileName = Path.GetFileNameWithoutExtension(filePath);
+
+            string newFilePath = Path.Combine(fileDir, String.Format("{0}{1}", fileName, toExtension));
+            
+            File.Move(filePath, newFilePath);
+            return newFilePath;
+        }
+
+        private static void UnZipFile(string filePath, string dstFolder)
+        {
+            ZipFile.ExtractToDirectory(filePath, dstFolder);
         }
     }
 }
