@@ -55,12 +55,13 @@
             this.findCertificateMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripMenuItem1 = new System.Windows.Forms.ToolStripSeparator();
             this.signToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.openResultFolderMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripMenuItem2 = new System.Windows.Forms.ToolStripSeparator();
             this.exitToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.helpToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.aboutMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.bttOpenResult = new System.Windows.Forms.Button();
-            this.openResultFolderMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.signContentInVsix = new System.Windows.Forms.CheckBox();
             this.groupBox1.SuspendLayout();
             this.mainMenu.SuspendLayout();
             this.SuspendLayout();
@@ -254,6 +255,7 @@
             this.txtBinaryPath.Name = "txtBinaryPath";
             this.txtBinaryPath.Size = new System.Drawing.Size(713, 20);
             this.txtBinaryPath.TabIndex = 1;
+            this.txtBinaryPath.TextChanged += new System.EventHandler(this.txtBinaryPath_TextChanged);
             // 
             // label1
             // 
@@ -353,6 +355,15 @@
             this.signToolStripMenuItem.Text = "Sign";
             this.signToolStripMenuItem.Click += new System.EventHandler(this.btnSign_Click);
             // 
+            // openResultFolderMenuItem
+            // 
+            this.openResultFolderMenuItem.Name = "openResultFolderMenuItem";
+            this.openResultFolderMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.R)));
+            this.openResultFolderMenuItem.Size = new System.Drawing.Size(226, 22);
+            this.openResultFolderMenuItem.Text = "&Open result folder";
+            this.openResultFolderMenuItem.Visible = false;
+            this.openResultFolderMenuItem.Click += new System.EventHandler(this.bttOpenResult_Click);
+            // 
             // toolStripMenuItem2
             // 
             this.toolStripMenuItem2.Name = "toolStripMenuItem2";
@@ -394,14 +405,17 @@
             this.bttOpenResult.Visible = false;
             this.bttOpenResult.Click += new System.EventHandler(this.bttOpenResult_Click);
             // 
-            // openResultFolderMenuItem
+            // signContentInVsix
             // 
-            this.openResultFolderMenuItem.Name = "openResultFolderMenuItem";
-            this.openResultFolderMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.R)));
-            this.openResultFolderMenuItem.Size = new System.Drawing.Size(226, 22);
-            this.openResultFolderMenuItem.Text = "&Open result folder";
-            this.openResultFolderMenuItem.Visible = false;
-            this.openResultFolderMenuItem.Click += new System.EventHandler(this.bttOpenResult_Click);
+            this.signContentInVsix.AutoSize = true;
+            this.signContentInVsix.Enabled = false;
+            this.signContentInVsix.Location = new System.Drawing.Point(394, 475);
+            this.signContentInVsix.Name = "signContentInVsix";
+            this.signContentInVsix.Size = new System.Drawing.Size(121, 17);
+            this.signContentInVsix.TabIndex = 6;
+            this.signContentInVsix.Text = "Sign Content In Vsix";
+            this.signContentInVsix.UseVisualStyleBackColor = true;
+            this.signContentInVsix.CheckedChanged += new System.EventHandler(this.signContentInVsix_CheckedChanged);
             // 
             // MainForm
             // 
@@ -410,6 +424,7 @@
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.CancelButton = this.btnClose;
             this.ClientSize = new System.Drawing.Size(883, 506);
+            this.Controls.Add(this.signContentInVsix);
             this.Controls.Add(this.bttOpenResult);
             this.Controls.Add(this.homeLink);
             this.Controls.Add(this.btnSign);
@@ -468,6 +483,7 @@
         private System.Windows.Forms.ToolStripMenuItem aboutMenuItem;
         private System.Windows.Forms.ToolStripMenuItem openResultFolderMenuItem;
         private System.Windows.Forms.Button bttOpenResult;
+        private System.Windows.Forms.CheckBox signContentInVsix;
     }
 }
 

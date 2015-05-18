@@ -13,6 +13,7 @@ namespace CodeTitans.Signature
 
         private OpenFileDialog _openBinaryDialog;
         private OpenFileDialog _openCertDialog;
+        private bool _signContentInVsix;
 
         public MainForm()
         {
@@ -235,6 +236,23 @@ namespace CodeTitans.Signature
         private void bttOpenResult_Click(object sender, EventArgs e)
         {
             DialogHelper.StartExplorerForFile(txtBinaryPath.Text);
+        }
+
+        private void signContentInVsix_CheckedChanged(object sender, EventArgs e)
+        {
+            _signContentInVsix = this.signContentInVsix.Checked;
+        }
+
+        private void txtBinaryPath_TextChanged(object sender, EventArgs e)
+        {
+            if (!string.IsNullOrEmpty(this.txtBinaryPath.Text) && this.txtBinaryPath.Text.TrimEnd().EndsWith(".vsix", StringComparison.OrdinalIgnoreCase))
+            {
+                this.signContentInVsix.Enabled = true;
+            }
+            else
+            {
+                this.signContentInVsix.Enabled = false;
+            }
         }
     }
 }

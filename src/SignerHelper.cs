@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.IO.Compression;
 using System.IO.Packaging;
 using System.Security.Cryptography.X509Certificates;
 using CodeTitans.Signature.Tools;
-using System.IO.Compression;
 
 namespace CodeTitans.Signature
 {
