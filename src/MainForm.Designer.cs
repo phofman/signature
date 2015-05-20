@@ -55,12 +55,15 @@
             this.findCertificateMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripMenuItem1 = new System.Windows.Forms.ToolStripSeparator();
             this.signToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.openResultFolderMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripMenuItem2 = new System.Windows.Forms.ToolStripSeparator();
             this.exitToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.helpToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.aboutMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.bttOpenResult = new System.Windows.Forms.Button();
-            this.openResultFolderMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.signContentInVsix = new System.Windows.Forms.CheckBox();
+            this.hashAlgorithmComboBox = new System.Windows.Forms.ComboBox();
+            this.hashAlgorithmLabel = new System.Windows.Forms.Label();
             this.groupBox1.SuspendLayout();
             this.mainMenu.SuspendLayout();
             this.SuspendLayout();
@@ -70,6 +73,8 @@
             this.groupBox1.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
+            this.groupBox1.Controls.Add(this.hashAlgorithmComboBox);
+            this.groupBox1.Controls.Add(this.hashAlgorithmLabel);
             this.groupBox1.Controls.Add(this.txtLog);
             this.groupBox1.Controls.Add(this.label6);
             this.groupBox1.Controls.Add(this.txtCertificateFilter);
@@ -89,7 +94,7 @@
             this.groupBox1.Controls.Add(this.label1);
             this.groupBox1.Location = new System.Drawing.Point(12, 27);
             this.groupBox1.Name = "groupBox1";
-            this.groupBox1.Size = new System.Drawing.Size(859, 438);
+            this.groupBox1.Size = new System.Drawing.Size(859, 482);
             this.groupBox1.TabIndex = 0;
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "Properties";
@@ -99,12 +104,12 @@
             this.txtLog.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.txtLog.Location = new System.Drawing.Point(20, 260);
+            this.txtLog.Location = new System.Drawing.Point(20, 302);
             this.txtLog.Multiline = true;
             this.txtLog.Name = "txtLog";
             this.txtLog.ReadOnly = true;
             this.txtLog.ScrollBars = System.Windows.Forms.ScrollBars.Both;
-            this.txtLog.Size = new System.Drawing.Size(824, 159);
+            this.txtLog.Size = new System.Drawing.Size(824, 161);
             this.txtLog.TabIndex = 16;
             // 
             // label6
@@ -131,15 +136,16 @@
             this.cmbTimestampServers.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.cmbTimestampServers.FormattingEnabled = true;
-            this.cmbTimestampServers.Location = new System.Drawing.Point(172, 218);
+            this.cmbTimestampServers.Location = new System.Drawing.Point(172, 262);
             this.cmbTimestampServers.Name = "cmbTimestampServers";
             this.cmbTimestampServers.Size = new System.Drawing.Size(622, 21);
             this.cmbTimestampServers.TabIndex = 15;
+            this.cmbTimestampServers.SelectedIndexChanged += new System.EventHandler(this.cmbTimestampServers_SelectedIndexChanged);
             // 
             // label5
             // 
             this.label5.AutoSize = true;
-            this.label5.Location = new System.Drawing.Point(17, 221);
+            this.label5.Location = new System.Drawing.Point(17, 262);
             this.label5.Name = "label5";
             this.label5.Size = new System.Drawing.Size(93, 13);
             this.label5.TabIndex = 14;
@@ -254,6 +260,7 @@
             this.txtBinaryPath.Name = "txtBinaryPath";
             this.txtBinaryPath.Size = new System.Drawing.Size(713, 20);
             this.txtBinaryPath.TabIndex = 1;
+            this.txtBinaryPath.TextChanged += new System.EventHandler(this.txtBinaryPath_TextChanged);
             // 
             // label1
             // 
@@ -268,7 +275,7 @@
             // 
             this.btnClose.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.btnClose.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-            this.btnClose.Location = new System.Drawing.Point(796, 471);
+            this.btnClose.Location = new System.Drawing.Point(796, 515);
             this.btnClose.Name = "btnClose";
             this.btnClose.Size = new System.Drawing.Size(75, 23);
             this.btnClose.TabIndex = 3;
@@ -279,7 +286,7 @@
             // btnSign
             // 
             this.btnSign.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnSign.Location = new System.Drawing.Point(660, 471);
+            this.btnSign.Location = new System.Drawing.Point(660, 515);
             this.btnSign.Name = "btnSign";
             this.btnSign.Size = new System.Drawing.Size(130, 23);
             this.btnSign.TabIndex = 2;
@@ -291,7 +298,7 @@
             // 
             this.homeLink.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.homeLink.AutoSize = true;
-            this.homeLink.Location = new System.Drawing.Point(12, 476);
+            this.homeLink.Location = new System.Drawing.Point(12, 520);
             this.homeLink.Name = "homeLink";
             this.homeLink.Size = new System.Drawing.Size(94, 13);
             this.homeLink.TabIndex = 1;
@@ -353,6 +360,15 @@
             this.signToolStripMenuItem.Text = "Sign";
             this.signToolStripMenuItem.Click += new System.EventHandler(this.btnSign_Click);
             // 
+            // openResultFolderMenuItem
+            // 
+            this.openResultFolderMenuItem.Name = "openResultFolderMenuItem";
+            this.openResultFolderMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.R)));
+            this.openResultFolderMenuItem.Size = new System.Drawing.Size(226, 22);
+            this.openResultFolderMenuItem.Text = "&Open result folder";
+            this.openResultFolderMenuItem.Visible = false;
+            this.openResultFolderMenuItem.Click += new System.EventHandler(this.bttOpenResult_Click);
+            // 
             // toolStripMenuItem2
             // 
             this.toolStripMenuItem2.Name = "toolStripMenuItem2";
@@ -385,7 +401,7 @@
             // 
             this.bttOpenResult.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.bttOpenResult.Location = new System.Drawing.Point(524, 471);
+            this.bttOpenResult.Location = new System.Drawing.Point(524, 515);
             this.bttOpenResult.Name = "bttOpenResult";
             this.bttOpenResult.Size = new System.Drawing.Size(130, 23);
             this.bttOpenResult.TabIndex = 5;
@@ -394,14 +410,39 @@
             this.bttOpenResult.Visible = false;
             this.bttOpenResult.Click += new System.EventHandler(this.bttOpenResult_Click);
             // 
-            // openResultFolderMenuItem
+            // signContentInVsix
             // 
-            this.openResultFolderMenuItem.Name = "openResultFolderMenuItem";
-            this.openResultFolderMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.R)));
-            this.openResultFolderMenuItem.Size = new System.Drawing.Size(226, 22);
-            this.openResultFolderMenuItem.Text = "&Open result folder";
-            this.openResultFolderMenuItem.Visible = false;
-            this.openResultFolderMenuItem.Click += new System.EventHandler(this.bttOpenResult_Click);
+            this.signContentInVsix.AutoSize = true;
+            this.signContentInVsix.CheckAlign = System.Drawing.ContentAlignment.TopLeft;
+            this.signContentInVsix.Checked = true;
+            this.signContentInVsix.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.signContentInVsix.Enabled = false;
+            this.signContentInVsix.Location = new System.Drawing.Point(395, 518);
+            this.signContentInVsix.Name = "signContentInVsix";
+            this.signContentInVsix.Size = new System.Drawing.Size(121, 17);
+            this.signContentInVsix.TabIndex = 6;
+            this.signContentInVsix.Text = "Sign Content In Vsix";
+            this.signContentInVsix.UseVisualStyleBackColor = true;
+            this.signContentInVsix.CheckedChanged += new System.EventHandler(this.signContentInVsix_CheckedChanged);
+            // 
+            // hashAlgorithmComboBox
+            // 
+            this.hashAlgorithmComboBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.hashAlgorithmComboBox.FormattingEnabled = true;
+            this.hashAlgorithmComboBox.Location = new System.Drawing.Point(172, 221);
+            this.hashAlgorithmComboBox.Name = "hashAlgorithmComboBox";
+            this.hashAlgorithmComboBox.Size = new System.Drawing.Size(622, 21);
+            this.hashAlgorithmComboBox.TabIndex = 18;
+            // 
+            // hashAlgorithmLabel
+            // 
+            this.hashAlgorithmLabel.AutoSize = true;
+            this.hashAlgorithmLabel.Location = new System.Drawing.Point(17, 221);
+            this.hashAlgorithmLabel.Name = "hashAlgorithmLabel";
+            this.hashAlgorithmLabel.Size = new System.Drawing.Size(81, 13);
+            this.hashAlgorithmLabel.TabIndex = 17;
+            this.hashAlgorithmLabel.Text = "Hash Algorithm:";
             // 
             // MainForm
             // 
@@ -409,7 +450,8 @@
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.CancelButton = this.btnClose;
-            this.ClientSize = new System.Drawing.Size(883, 506);
+            this.ClientSize = new System.Drawing.Size(883, 550);
+            this.Controls.Add(this.signContentInVsix);
             this.Controls.Add(this.bttOpenResult);
             this.Controls.Add(this.homeLink);
             this.Controls.Add(this.btnSign);
@@ -468,6 +510,9 @@
         private System.Windows.Forms.ToolStripMenuItem aboutMenuItem;
         private System.Windows.Forms.ToolStripMenuItem openResultFolderMenuItem;
         private System.Windows.Forms.Button bttOpenResult;
+        private System.Windows.Forms.CheckBox signContentInVsix;
+        private System.Windows.Forms.ComboBox hashAlgorithmComboBox;
+        private System.Windows.Forms.Label hashAlgorithmLabel;
     }
 }
 
