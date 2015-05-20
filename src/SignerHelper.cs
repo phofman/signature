@@ -29,7 +29,7 @@ namespace CodeTitans.Signature
                                 string certificatePassword,
                                 string timestampServer,
                                 string hashAlgorithm,
-                                bool signContentInVsix = false)
+                                bool signContentInVsix)
         {
             if (string.IsNullOrEmpty(binaryPath))
                 throw new ArgumentNullException("binaryPath");
@@ -73,7 +73,7 @@ namespace CodeTitans.Signature
                                             string certificatePath,
                                             string certificatePassword,
                                             string timestampServer,
-                                            string hashAlgorithm = "SHA1")
+                                            string hashAlgorithm)
         {
             bool success = true;
 
@@ -93,7 +93,7 @@ namespace CodeTitans.Signature
                                 Where(f => !VerifyBinaryDigitalSignature(f)).ToArray();
             foreach (var file in filesToSign)
             {
-                success = SignBinary(file, certificatePath, certificatePassword, timestampServer);
+                success = SignBinary(file, certificatePath, certificatePassword, timestampServer, hashAlgorithm);
                 if (!success)
                 {
                     break;
@@ -149,7 +149,7 @@ namespace CodeTitans.Signature
             }
         }
 
-        private static bool SignBinary(string path, string certPath, string certPassword, string timestampServer, string hashAlgorithm = "SHA1")
+        private static bool SignBinary(string path, string certPath, string certPassword, string timestampServer, string hashAlgorithm)
         {
             // " sign /fd {0} /f {1} /t {2} /p {3} {4}"
             string command = String.Format(SignBinaryCmd,
