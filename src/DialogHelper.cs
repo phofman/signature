@@ -17,7 +17,7 @@ namespace CodeTitans.Signature
             var openFile = new OpenFileDialog();
             openFile.Title = title;
             openFile.DefaultExt = ".exe";
-            openFile.Filter = "Executable|*.dll;*.exe;*.ocx;*.cab;*.msi|Java Package|*xpi;*.jar;*.war;*.ear|VSIX Package|*.vsix;*.cab;*.msi|All files|*.*";
+            openFile.Filter = "VSIX Package|*.vsix;*.cab;*.msi|Executable|*.dll;*.exe;*.ocx;*.cab;*.msi|Java Package|*xpi;*.jar;*.war;*.ear|All files|*.*";
 
             openFile.FilterIndex = 0;
             openFile.CheckFileExists = true;

@@ -63,9 +63,6 @@
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SignerHelper.cs" />
-    <Compile Include="Tools\SignToolRunner.cs" />
-    <Compile Include="Tools\ToolRunner.cs" />
-    <Compile Include="Tools\ToolRunnerEventArgs.cs" />
     <EmbeddedResource Include="AboutForm.resx">
       <DependentUpon>AboutForm.cs</DependentUpon>
     </EmbeddedResource>

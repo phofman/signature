@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Security.Cryptography.X509Certificates;
 using System.Windows.Forms;
-using CodeTitans.Signature.Tools;
 
 namespace CodeTitans.Signature
 {
@@ -13,7 +12,7 @@ namespace CodeTitans.Signature
 
         private OpenFileDialog _openBinaryDialog;
         private OpenFileDialog _openCertDialog;
-        private bool _signContentInVsix;
+        private bool _signContentInVsix = true;
 
         public MainForm()
         {
@@ -22,6 +21,7 @@ namespace CodeTitans.Signature
             radioInstalled.Checked = true;
             txtCertificateFilter.Text = "Open Source Developer";
 
+            FillHashAlgorithms();
             FillTimestampServers();
 
             // allow file drops on that application:
@@ -109,6 +109,16 @@ namespace CodeTitans.Signature
                 }
             }
         }
+        
+        private void FillHashAlgorithms()
+        {
+            hashAlgorithmComboBox.Items.Clear();
+            foreach (var item in CertificateHelper.LoadHashAlgorithms())
+            {
+                hashAlgorithmComboBox.Items.Add(new ComboBoxItem(item, item));
+            }
+            hashAlgorithmComboBox.SelectedIndex = 0;
+        }
 
         private void FillTimestampServers()
         {
@@ -190,7 +200,7 @@ namespace CodeTitans.Signature
                 return;
             }
 
-            var certificate = cmbCertificates.SelectedItem != null ? ((ComboBoxItem) cmbCertificates.SelectedItem).Data as X509Certificate2 : null;
+            var certificate = cmbCertificates.SelectedItem != null ? ((ComboBoxItem)cmbCertificates.SelectedItem).Data as X509Certificate2 : null;
             if (cmbCertificates.Enabled && certificate == null)
             {
                 MessageBox.Show("You must select a valid certificate", AppTitle, MessageBoxButtons.OK, MessageBoxIcon.Error);
@@ -198,28 +208,18 @@ namespace CodeTitans.Signature
                 return;
             }
 
-            var timestampServer = cmbTimestampServers.SelectedItem != null ? ((ComboBoxItem) cmbTimestampServers.SelectedItem).Data as string : null;
+            var timestampServer = cmbTimestampServers.SelectedItem != null ? ((ComboBoxItem)cmbTimestampServers.SelectedItem).Data as string : null;
+            string hashAlgorithm = hashAlgorithmComboBox.SelectedItem != null ? ((ComboBoxItem)hashAlgorithmComboBox.SelectedItem).Data as string : "SHA1";
             if (cmbCertificates.Enabled)
             {
-                SignerHelper.Sign(txtBinaryPath.Text, certificate, null, null, timestampServer, OnFinished);
+                SignerHelper.Sign(txtBinaryPath.Text, certificate, null, null, timestampServer, hashAlgorithm, _signContentInVsix);
             }
             else
             {
-                SignerHelper.Sign(txtBinaryPath.Text, null, txtCertificatePath.Text, txtCertificatePassword.Text, timestampServer, OnFinished);
+                SignerHelper.Sign(txtBinaryPath.Text, null, txtCertificatePath.Text, txtCertificatePassword.Text, timestampServer, hashAlgorithm, _signContentInVsix);
             }
 
             ShowOpenResult = true;
-        }
-
-        private void OnFinished(ToolRunnerEventArgs e)
-        {
-            if (InvokeRequired)
-            {
-                Invoke(new Action<ToolRunnerEventArgs>(OnFinished), e);
-                return;
-            }
-
-            txtLog.Text = string.Concat(e.Output, string.IsNullOrEmpty(e.Output) ? string.Empty : Environment.NewLine, e.Error);
         }
 
         private void homeLink_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
@@ -253,6 +253,11 @@ namespace CodeTitans.Signature
             {
                 this.signContentInVsix.Enabled = false;
             }
+        }
+
+        private void cmbTimestampServers_SelectedIndexChanged(object sender, EventArgs e)
+        {
+
         }
     }
 }
