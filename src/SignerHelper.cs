@@ -18,6 +18,7 @@ namespace CodeTitans.Signature
         private const string SigningVerifiedString = "Successfully verified";
         private const string VerifyDigitalSignatureCmd = " verify /pa \"{0}\"";
         private const string SignBinaryCmd = " sign /fd {0} /f {1} /t {2} /p {3} {4}";
+        private const string HashAlgorithmUri = "http://www.w3.org/2000/09/xmldsig#{0}";
         private static string _signtool = EnsureSignTool();
 
         /// <summary>
@@ -111,13 +112,16 @@ namespace CodeTitans.Signature
 
         private static void SignVsix(string vsixPackagePath, X509Certificate2 certificate, string hashAlgorithm)
         {
+
             // many thanks to Jeff Wilcox for the idea and code
             // check for details: http://www.jeff.wilcox.name/2010/03/vsixcodesigning/
             using (var package = Package.Open(vsixPackagePath))
             {
                 var signatureManager = new PackageDigitalSignatureManager(package);
                 signatureManager.CertificateOption = CertificateEmbeddingOption.InSignaturePart;
-                signatureManager.HashAlgorithm = hashAlgorithm;
+
+                // TODO: Need find a way to specify the hash algorithm.
+                //signatureManager.HashAlgorithm = String.Format(HashAlgorithmUri, hashAlgorithm.ToLower());
 
                 var partsToSign = new List<Uri>();
                 foreach (var packagePart in package.GetParts())
