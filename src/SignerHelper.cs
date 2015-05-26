@@ -62,7 +62,7 @@ namespace CodeTitans.Signature
                     }
                 }
 
-                SignVsix(binaryPath, certificate);
+                SignVsix(binaryPath, certificate, hashAlgorithm);
                 return;
             }
 
@@ -109,7 +109,7 @@ namespace CodeTitans.Signature
             return success;
         }
 
-        private static void SignVsix(string vsixPackagePath, X509Certificate2 certificate)
+        private static void SignVsix(string vsixPackagePath, X509Certificate2 certificate, string hashAlgorithm)
         {
             // many thanks to Jeff Wilcox for the idea and code
             // check for details: http://www.jeff.wilcox.name/2010/03/vsixcodesigning/
@@ -117,6 +117,7 @@ namespace CodeTitans.Signature
             {
                 var signatureManager = new PackageDigitalSignatureManager(package);
                 signatureManager.CertificateOption = CertificateEmbeddingOption.InSignaturePart;
+                signatureManager.HashAlgorithm = hashAlgorithm;
 
                 var partsToSign = new List<Uri>();
                 foreach (var packagePart in package.GetParts())
