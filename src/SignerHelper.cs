@@ -17,8 +17,9 @@ namespace CodeTitans.Signature
     {
         private const string SigningVerifiedString = "Successfully verified";
         private const string VerifyDigitalSignatureCmd = " verify /pa \"{0}\"";
-        private const string SignBinaryCmd = " sign /fd {0} /f {1} /t {2} /p {3} {4}";
-        private const string HashAlgorithmUri = "http://www.w3.org/2000/09/xmldsig#{0}";
+        private const string SignBinaryWithPfxCmd = " sign /fd {0} /f {1} /t {2} /p {3} {4}";
+        private const string SignBinaryWithCertCmd = " sign /fd {0} /n {1} /t {2} {3}";
+        private const string SubjectPrefix = "CN=";
         private static string _signtool = EnsureSignTool();
 
         /// <summary>
@@ -37,29 +38,35 @@ namespace CodeTitans.Signature
             if (certificate == null && string.IsNullOrEmpty(certificatePath))
                 throw new ArgumentException("certificate");
 
+            bool success = false;
             // is it a VSIX package?
             var extension = Path.GetExtension(binaryPath);
+
+            if (certificate == null)
+            {
+                try
+                {
+                    certificate = new X509Certificate2(certificatePath, certificatePassword);
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show(ex.Message, "Certificate error");
+                    return;
+                }
+            }
+            string subject = GetSubjectName(certificate == null ? null : certificate.Subject);
+
             if (string.Compare(extension, ".vsix", StringComparison.OrdinalIgnoreCase) == 0)
             {
-                if (certificate == null)
-                {
-                    try
-                    {
-                        certificate = new X509Certificate2(certificatePath, certificatePassword);
-                    }
-                    catch (Exception ex)
-                    {
-                        MessageBox.Show(ex.Message, "Certificate error");
-                        return;
-                    }
-                }
+               
 
                 if (signContentInVsix)
                 {
-                    bool success = SignVsixContent(binaryPath, certificatePath, certificatePassword, timestampServer, hashAlgorithm);
+                    success = SignVsixContent(binaryPath, subject, certificatePath, certificatePassword, timestampServer, hashAlgorithm);
                     if (!success)
                     {
                         MessageBox.Show("Signing of binary contained in VSIX failed.", "VSIX signing failed");
+                        return;
                     }
                 }
 
@@ -67,10 +74,19 @@ namespace CodeTitans.Signature
                 return;
             }
 
-            SignBinary(binaryPath, certificatePath, certificatePassword, timestampServer, hashAlgorithm);
+            success = SignBinary(binaryPath, subject, certificatePath, certificatePassword, timestampServer, hashAlgorithm);
+            if (success)
+            {
+                MessageBox.Show("The signing completed successfully.", "Extension Signing Complete");
+            }
+            else
+            {
+                MessageBox.Show("The digital signature is invalid, there may have been a problem with the signing process.", "Invalid Signature");
+            }
         }
 
         private static bool SignVsixContent(string binaryPath,
+                                            string subject,
                                             string certificatePath,
                                             string certificatePassword,
                                             string timestampServer,
@@ -94,7 +110,7 @@ namespace CodeTitans.Signature
                                 Where(f => !VerifyBinaryDigitalSignature(f)).ToArray();
             foreach (var file in filesToSign)
             {
-                success = SignBinary(file, certificatePath, certificatePassword, timestampServer, hashAlgorithm);
+                success = SignBinary(file, subject, certificatePath, certificatePassword, timestampServer, hashAlgorithm);
                 if (!success)
                 {
                     break;
@@ -112,7 +128,6 @@ namespace CodeTitans.Signature
 
         private static void SignVsix(string vsixPackagePath, X509Certificate2 certificate, string hashAlgorithm)
         {
-
             // many thanks to Jeff Wilcox for the idea and code
             // check for details: http://www.jeff.wilcox.name/2010/03/vsixcodesigning/
             using (var package = Package.Open(vsixPackagePath))
@@ -120,8 +135,14 @@ namespace CodeTitans.Signature
                 var signatureManager = new PackageDigitalSignatureManager(package);
                 signatureManager.CertificateOption = CertificateEmbeddingOption.InSignaturePart;
 
-                // TODO: Need find a way to specify the hash algorithm.
-                //signatureManager.HashAlgorithm = String.Format(HashAlgorithmUri, hashAlgorithm.ToLower());
+                if (hashAlgorithm.Equals("SHA256", StringComparison.OrdinalIgnoreCase))
+                {
+                    signatureManager.HashAlgorithm = "http://www.w3.org/2001/04/xmlenc#sha256";
+                }
+                else if (hashAlgorithm.Equals("SHA512", StringComparison.OrdinalIgnoreCase))
+                {
+                    signatureManager.HashAlgorithm = "http://www.w3.org/2001/04/xmlenc#sha512";
+                }
 
                 var partsToSign = new List<Uri>();
                 foreach (var packagePart in package.GetParts())
@@ -154,15 +175,29 @@ namespace CodeTitans.Signature
             }
         }
 
-        private static bool SignBinary(string path, string certPath, string certPassword, string timestampServer, string hashAlgorithm)
+        private static bool SignBinary(string path, string subject, string certPath, string certPassword, string timestampServer, string hashAlgorithm)
         {
-            // " sign /fd {0} /f {1} /t {2} /p {3} {4}"
-            string command = String.Format(SignBinaryCmd,
-                                           hashAlgorithm,
-                                           certPath,
-                                           timestampServer,
-                                           certPassword,
-                                           path);
+            string command;
+            if (subject != null)
+            {
+                // " sign /fd {0} /n {1} /t {2} {3}"
+                command = String.Format(SignBinaryWithCertCmd,
+                                        hashAlgorithm,
+                                        subject,
+                                        timestampServer,
+                                        path);
+            }
+            else
+            {
+                // " sign /fd {0} /f {1} /t {2} /p {3} {4}"
+                command = String.Format(SignBinaryWithPfxCmd,
+                                        hashAlgorithm,
+                                        certPath,
+                                        timestampServer,
+                                        certPassword,
+                                        path);
+            }
+            
             string msg = ExecuteCommand(command);
             return msg.Contains("Successfully signed:");
         }
@@ -272,6 +307,14 @@ namespace CodeTitans.Signature
             }
 
             return null;
+        }
+
+        private static string GetSubjectName(string subject)
+        {
+            if (subject == null)
+                return null;
+
+            return subject.Substring(subject.IndexOf(SubjectPrefix) + SubjectPrefix.Length);
         }
     }
 }
