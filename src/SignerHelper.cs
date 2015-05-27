@@ -18,7 +18,7 @@ namespace CodeTitans.Signature
         private const string SigningVerifiedString = "Successfully verified";
         private const string VerifyDigitalSignatureCmd = " verify /pa \"{0}\"";
         private const string SignBinaryWithPfxCmd = " sign /fd {0} /f {1} /t {2} /p {3} {4}";
-        private const string SignBinaryWithCertCmd = " sign /fd {0} /n {1} /t {2} {3}";
+        private const string SignBinaryWithCertCmd = " sign /fd {0} /sha1 {1} /n \"{2}\" /t {3} {4}";
         private const string SubjectPrefix = "CN=";
         private static string _signtool = EnsureSignTool();
 
@@ -55,6 +55,7 @@ namespace CodeTitans.Signature
                 }
             }
             string subject = GetSubjectName(certificate == null ? null : certificate.Subject);
+            string thumbPrint = certificate == null ? null : certificate.Thumbprint;
 
             if (string.Compare(extension, ".vsix", StringComparison.OrdinalIgnoreCase) == 0)
             {
@@ -62,7 +63,7 @@ namespace CodeTitans.Signature
 
                 if (signContentInVsix)
                 {
-                    success = SignVsixContent(binaryPath, subject, certificatePath, certificatePassword, timestampServer, hashAlgorithm);
+                    success = SignVsixContent(binaryPath, subject, thumbPrint, certificatePath, certificatePassword, timestampServer, hashAlgorithm);
                     if (!success)
                     {
                         MessageBox.Show("Signing of binary contained in VSIX failed.", "VSIX signing failed");
@@ -74,7 +75,7 @@ namespace CodeTitans.Signature
                 return;
             }
 
-            success = SignBinary(binaryPath, subject, certificatePath, certificatePassword, timestampServer, hashAlgorithm);
+            success = SignBinary(binaryPath, subject, thumbPrint, certificatePath, certificatePassword, timestampServer, hashAlgorithm);
             if (success)
             {
                 MessageBox.Show("The signing completed successfully.", "Extension Signing Complete");
@@ -87,6 +88,7 @@ namespace CodeTitans.Signature
 
         private static bool SignVsixContent(string binaryPath,
                                             string subject,
+                                            string thumbPrint,
                                             string certificatePath,
                                             string certificatePassword,
                                             string timestampServer,
@@ -110,7 +112,7 @@ namespace CodeTitans.Signature
                                 Where(f => !VerifyBinaryDigitalSignature(f)).ToArray();
             foreach (var file in filesToSign)
             {
-                success = SignBinary(file, subject, certificatePath, certificatePassword, timestampServer, hashAlgorithm);
+                success = SignBinary(file, subject, thumbPrint, certificatePath, certificatePassword, timestampServer, hashAlgorithm);
                 if (!success)
                 {
                     break;
@@ -135,14 +137,14 @@ namespace CodeTitans.Signature
                 var signatureManager = new PackageDigitalSignatureManager(package);
                 signatureManager.CertificateOption = CertificateEmbeddingOption.InSignaturePart;
 
-                if (hashAlgorithm.Equals("SHA256", StringComparison.OrdinalIgnoreCase))
-                {
-                    signatureManager.HashAlgorithm = "http://www.w3.org/2001/04/xmlenc#sha256";
-                }
-                else if (hashAlgorithm.Equals("SHA512", StringComparison.OrdinalIgnoreCase))
-                {
-                    signatureManager.HashAlgorithm = "http://www.w3.org/2001/04/xmlenc#sha512";
-                }
+                //if (hashAlgorithm.Equals("SHA256", StringComparison.OrdinalIgnoreCase))
+                //{
+                //    signatureManager.HashAlgorithm = "http://www.w3.org/2001/04/xmldsig#rsa-sha256";
+                //}
+                //else if (hashAlgorithm.Equals("SHA512", StringComparison.OrdinalIgnoreCase))
+                //{
+                //    signatureManager.HashAlgorithm = "http://www.w3.org/2001/04/xmldsig-more#rsa-sha512";
+                //}
 
                 var partsToSign = new List<Uri>();
                 foreach (var packagePart in package.GetParts())
@@ -175,14 +177,21 @@ namespace CodeTitans.Signature
             }
         }
 
-        private static bool SignBinary(string path, string subject, string certPath, string certPassword, string timestampServer, string hashAlgorithm)
+        private static bool SignBinary(string path, 
+                                       string subject, 
+                                       string thumbPrint, 
+                                       string certPath, 
+                                       string certPassword, 
+                                       string timestampServer, 
+                                       string hashAlgorithm)
         {
             string command;
-            if (subject != null)
+            if (subject != null && thumbPrint != null)
             {
-                // " sign /fd {0} /n {1} /t {2} {3}"
+                // " sign /fd {0} /sha1 {1} /n "{2}" /t {3} {4}"
                 command = String.Format(SignBinaryWithCertCmd,
                                         hashAlgorithm,
+                                        thumbPrint,
                                         subject,
                                         timestampServer,
                                         path);
