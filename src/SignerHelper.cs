@@ -15,11 +15,9 @@ namespace CodeTitans.Signature
     /// </summary>
     static class SignerHelper
     {
-        private const string SigningVerifiedString = "Successfully verified";
         private const string VerifyDigitalSignatureCmd = " verify /pa \"{0}\"";
-        private const string SignBinaryWithPfxCmd = " sign /fd {0} /f {1} /t {2} /p {3} {4}";
-        private const string SignBinaryWithCertCmd = " sign /fd {0} /sha1 {1} /a /t {2} {3}";
-        private const string SubjectPrefix = "CN=";
+        private const string SignBinaryWithPfxCmd = " sign /fd \"{0}\" /f \"{1}\" /t \"{2}\" /p \"{3}\" \"{4}\"";
+        private const string SignBinaryWithCertCmd = " sign /fd \"{0}\" /sha1 \"{1}\" /a /t \"{2}\" \"{3}\"";
         private static string _signtool = EnsureSignTool();
 
         /// <summary>
@@ -59,8 +57,6 @@ namespace CodeTitans.Signature
 
             if (string.Compare(extension, ".vsix", StringComparison.OrdinalIgnoreCase) == 0)
             {
-               
-
                 if (signContentInVsix)
                 {
                     success = SignVsixContent(binaryPath, thumbPrint, certificatePath, certificatePassword, timestampServer, hashAlgorithm);
@@ -204,16 +200,16 @@ namespace CodeTitans.Signature
                                         path);
             }
             
-            string msg = ExecuteCommand(command);
-            return msg.Contains("Successfully signed:");
+            int exitCode = ExecuteCommand(command);
+            return exitCode == 0;
         }
 
         private static bool VerifyBinaryDigitalSignature(string path)
         {
             // Verify digital signature
             string command = String.Format(VerifyDigitalSignatureCmd, path);
-            string message = ExecuteCommand(command);
-            return message.Contains(SigningVerifiedString);
+            int exitCode = ExecuteCommand(command);
+            return exitCode == 0;
         }
 
         private static bool ValidateSignatures(Package package)
@@ -235,7 +231,7 @@ namespace CodeTitans.Signature
             return newFilePath;
         }
 
-        private static string ExecuteCommand(string command)
+        private static int ExecuteCommand(string command)
         {
             if (Signtool == null)
             {
@@ -249,18 +245,24 @@ namespace CodeTitans.Signature
 
             Process proc = new Process();
             proc.StartInfo = procStartInfo;
-            string output = String.Empty;
-
-            proc.Start();
-            output = proc.StandardOutput.ReadToEnd();
-            if (!proc.HasExited)
+            int exitCode = -1;
+            try
             {
-                proc.Close();
+                proc.Start();
+                proc.WaitForExit(5000);
+                exitCode = proc.ExitCode;
             }
-
-            return output;
+            finally
+            {
+                if (proc != null)
+                {
+                    proc.Close();
+                }
+            }
+            
+            return exitCode;
         }
-
+        
         private static string Signtool
         {
             get
@@ -313,14 +315,6 @@ namespace CodeTitans.Signature
             }
 
             return null;
-        }
-
-        private static string GetSubjectName(string subject)
-        {
-            if (subject == null)
-                return null;
-
-            return subject.Substring(subject.IndexOf(SubjectPrefix) + SubjectPrefix.Length);
         }
     }
 }
