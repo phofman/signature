@@ -5,12 +5,12 @@ namespace CodeTitans.Signature
     /// <summary>
     /// Arguments describing signing result.
     /// </summary>
-    internal sealed class SignEventArgs : EventArgs
+    internal sealed class SignCompletionEventArgs : EventArgs
     {
         /// <summary>
         /// Init constructor.
         /// </summary>
-        public SignEventArgs(bool success, string output, string error)
+        public SignCompletionEventArgs(bool success, string output, string error)
         {
             Success = success;
             Output = output;

@@ -222,7 +222,7 @@ namespace CodeTitans.Signature
             ShowOpenResult = true;
         }
 
-        private void OnFinished(SignEventArgs e)
+        private void OnFinished(SignCompletionEventArgs e)
         {
             if (e.Success)
             {

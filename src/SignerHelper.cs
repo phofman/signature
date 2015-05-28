@@ -31,7 +31,7 @@ namespace CodeTitans.Signature
                                 string timestampServer,
                                 string hashAlgorithm,
                                 bool signContentInVsix,
-                                Action<SignEventArgs> finishAction)
+                                Action<SignCompletionEventArgs> finishAction)
         {
             if (string.IsNullOrEmpty(binaryPath))
                 throw new ArgumentNullException("binaryPath");
@@ -49,7 +49,7 @@ namespace CodeTitans.Signature
                 {
                     if (finishAction != null)
                     {
-                        finishAction(new SignEventArgs(false, "Certificate error.", ex.Message));
+                        finishAction(new SignCompletionEventArgs(false, "Certificate error.", ex.Message));
                     }
                     return;
                 }
@@ -68,7 +68,7 @@ namespace CodeTitans.Signature
                     {
                         if (finishAction != null)
                         {
-                            finishAction(new SignEventArgs(false, "Signing of binary contained in VSIX failed.", _error.ToString()));
+                            finishAction(new SignCompletionEventArgs(false, "Signing of binary contained in VSIX failed.", _error.ToString()));
                         }
                         return;
                     }
@@ -84,14 +84,14 @@ namespace CodeTitans.Signature
             {
                 if (finishAction != null)
                 {
-                    finishAction(new SignEventArgs(true, _output.ToString(), null));
+                    finishAction(new SignCompletionEventArgs(true, _output.ToString(), null));
                 }
             }
             else
             {
                 if (finishAction != null)
                 {
-                    finishAction(new SignEventArgs(false, "Signing of binary failed.", _error.ToString()));
+                    finishAction(new SignCompletionEventArgs(false, "Signing of binary failed.", _error.ToString()));
                 }
             }
         }
@@ -137,7 +137,7 @@ namespace CodeTitans.Signature
             return success;
         }
 
-        private static void SignVsix(string vsixPackagePath, X509Certificate2 certificate, string hashAlgorithm, Action<SignEventArgs> finishAction)
+        private static void SignVsix(string vsixPackagePath, X509Certificate2 certificate, string hashAlgorithm, Action<SignCompletionEventArgs> finishAction)
         {
             // many thanks to Jeff Wilcox for the idea and code
             // check for details: http://www.jeff.wilcox.name/2010/03/vsixcodesigning/
@@ -165,7 +165,7 @@ namespace CodeTitans.Signature
                 catch (CryptographicException ex)
                 {
                     if (finishAction != null)
-                        finishAction(new SignEventArgs(false, null, "Signing could not be completed: " + ex.Message));
+                        finishAction(new SignCompletionEventArgs(false, null, "Signing could not be completed: " + ex.Message));
                     return;
                 }
 
@@ -173,12 +173,12 @@ namespace CodeTitans.Signature
                 {
                     _output.AppendLine("VSIX signing completed successfully.");
                     if (finishAction != null)
-                        finishAction(new SignEventArgs(true, _output.ToString(), null));
+                        finishAction(new SignCompletionEventArgs(true, _output.ToString(), null));
                 }
                 else
                 {
                     if (finishAction != null)
-                        finishAction(new SignEventArgs(false, "The digital signature is invalid, there may have been a problem with the signing process.", _error.ToString()));
+                        finishAction(new SignCompletionEventArgs(false, "The digital signature is invalid, there may have been a problem with the signing process.", _error.ToString()));
                 }
             }
         }
