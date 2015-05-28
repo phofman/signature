@@ -228,6 +228,10 @@ namespace CodeTitans.Signature
             {
                 MessageBox.Show("Signing successfully completed.");
             }
+            else
+            {
+                MessageBox.Show("Signing failed.");
+            }
 
             txtLog.Text = string.Concat(e.Output, string.IsNullOrEmpty(e.Output) ? string.Empty : Environment.NewLine, e.Error);
         }
