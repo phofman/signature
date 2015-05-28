@@ -5,9 +5,9 @@ using System.IO;
 using System.IO.Compression;
 using System.IO.Packaging;
 using System.Linq;
+using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
-using System.Windows.Forms;
 
 namespace CodeTitans.Signature
 {
@@ -16,9 +16,9 @@ namespace CodeTitans.Signature
     /// </summary>
     static class SignerHelper
     {
-        private const string VerifyDigitalSignatureCmd = " verify /pa \"{0}\"";
-        private const string SignBinaryWithPfxCmd = " sign /fd \"{0}\" /f \"{1}\" /t \"{2}\" /p \"{3}\" \"{4}\"";
-        private const string SignBinaryWithCertCmd = " sign /fd \"{0}\" /sha1 \"{1}\" /a /t \"{2}\" \"{3}\"";
+        private const string VerifyDigitalSignatureCmd = "verify /pa \"{0}\"";
+        private const string SignBinaryWithPfxCmd = "sign /fd \"{0}\" /f \"{1}\" /t \"{2}\" /p \"{3}\" \"{4}\"";
+        private const string SignBinaryWithCertCmd = "sign /fd \"{0}\" /sha1 \"{1}\" /a /t \"{2}\" \"{3}\"";
         private static string _signtool = EnsureSignTool();
         private static StringBuilder _output = new StringBuilder();
         private static StringBuilder _error = new StringBuilder();
@@ -40,10 +40,7 @@ namespace CodeTitans.Signature
             if (certificate == null && string.IsNullOrEmpty(certificatePath))
                 throw new ArgumentException("certificate");
 
-            bool success = false;
-            // is it a VSIX package?
-            var extension = Path.GetExtension(binaryPath);
-
+            // try to load the certificate:
             if (certificate == null)
             {
                 try
@@ -52,19 +49,24 @@ namespace CodeTitans.Signature
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show(ex.Message, "Certificate error");
+                    if (finishAction != null)
+                    {
+                        finishAction(new SignEventArgs(false, "Certificate error.", ex.Message));
+                    }
                     return;
                 }
             }
 
-            string thumbPrint = certificate == null ? null : certificate.Thumbprint;
+            // is it a VSIX package?
+            var extension = Path.GetExtension(binaryPath);
+            string thumbPrint = certificate.Thumbprint;
 
             if (string.Compare(extension, ".vsix", StringComparison.OrdinalIgnoreCase) == 0)
             {
                 if (signContentInVsix)
                 {
-                    success = SignVsixContent(binaryPath, thumbPrint, certificatePath, certificatePassword, timestampServer, hashAlgorithm);
-                    if (!success)
+                    var result2 = SignVsixContent(binaryPath, thumbPrint, certificatePath, certificatePassword, timestampServer, hashAlgorithm);
+                    if (!result2)
                     {
                         if (finishAction != null)
                         {
@@ -78,8 +80,9 @@ namespace CodeTitans.Signature
                 return;
             }
 
-            success = SignBinary(binaryPath, thumbPrint, certificatePath, certificatePassword, timestampServer, hashAlgorithm);
-            if (success)
+            // or just a single binary to sign?
+            var result = SignBinary(binaryPath, thumbPrint, certificatePath, certificatePassword, timestampServer, hashAlgorithm);
+            if (result)
             {
                 if (finishAction != null)
                 {
@@ -161,7 +164,7 @@ namespace CodeTitans.Signature
                 {
                     signatureManager.Sign(partsToSign, certificate);
                 }
-                catch (System.Security.Cryptography.CryptographicException ex)
+                catch (CryptographicException ex)
                 {
                     if (finishAction != null)
                         finishAction(new SignEventArgs(false, null, "Signing could not be completed: " + ex.Message));
@@ -182,17 +185,17 @@ namespace CodeTitans.Signature
             }
         }
 
-        private static bool SignBinary(string path, 
-                                       string thumbPrint, 
-                                       string certPath, 
-                                       string certPassword, 
-                                       string timestampServer, 
+        private static bool SignBinary(string path,
+                                       string thumbPrint,
+                                       string certPath,
+                                       string certPassword,
+                                       string timestampServer,
                                        string hashAlgorithm)
         {
             string command;
             if (thumbPrint != null)
             {
-                // " sign /fd {0} /sha1 {1} /a /t {2} {3}"
+                // "sign /fd {0} /sha1 {1} /a /t {2} {3}"
                 command = String.Format(SignBinaryWithCertCmd,
                                         hashAlgorithm,
                                         thumbPrint,
@@ -201,7 +204,7 @@ namespace CodeTitans.Signature
             }
             else
             {
-                // " sign /fd {0} /f {1} /t {2} /p {3} {4}"
+                // "sign /fd {0} /f {1} /t {2} /p {3} {4}"
                 command = String.Format(SignBinaryWithPfxCmd,
                                         hashAlgorithm,
                                         certPath,
@@ -254,14 +257,14 @@ namespace CodeTitans.Signature
             return newFilePath;
         }
 
-        private static int ExecuteCommand(string command, out string output, out string error)
+        private static int ExecuteCommand(string arguments, out string output, out string error)
         {
             if (Signtool == null)
             {
-                throw new ArgumentNullException("Cannot find signtool.exe");
+                throw new ArgumentException("Cannot find signtool.exe");
             }
 
-            ProcessStartInfo procStartInfo = new ProcessStartInfo(Signtool, command);
+            ProcessStartInfo procStartInfo = new ProcessStartInfo(Signtool, arguments);
             procStartInfo.CreateNoWindow = true;
             procStartInfo.RedirectStandardOutput = true;
             procStartInfo.RedirectStandardError = true;
@@ -280,12 +283,9 @@ namespace CodeTitans.Signature
             }
             finally
             {
-                if (proc != null)
-                {
-                    proc.Close();
-                }
+                proc.Close();
             }
-            
+
             return exitCode;
         }
         
@@ -303,11 +303,11 @@ namespace CodeTitans.Signature
 
         private static string EnsureSignTool()
         {
-            var programFilesX86 = System.Environment.GetFolderPath(System.Environment.SpecialFolder.ProgramFilesX86);
+            var programFilesX86 = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86);
 
             if (string.IsNullOrEmpty(programFilesX86))
             {
-                programFilesX86 = System.Environment.GetFolderPath(System.Environment.SpecialFolder.ProgramFiles);
+                programFilesX86 = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles);
             }
 
             string signtool = Path.Combine(programFilesX86, "Windows Kits", "8.1", "bin", "x64", "signtool.exe");

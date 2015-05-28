@@ -1,18 +1,20 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace CodeTitans.Signature
 {
+    /// <summary>
+    /// Arguments describing signing result.
+    /// </summary>
     internal sealed class SignEventArgs : EventArgs
     {
+        /// <summary>
+        /// Init constructor.
+        /// </summary>
         public SignEventArgs(bool success, string output, string error)
         {
-            this.Success = success;
-            this.Output = output;
-            this.Error = error;
+            Success = success;
+            Output = output;
+            Error = error;
         }
 
         public bool Success
