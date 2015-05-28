@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.IO.Compression;
 using System.IO.Packaging;
@@ -19,7 +18,6 @@ namespace CodeTitans.Signature
         private const string VerifyDigitalSignatureCmd = "verify /pa \"{0}\"";
         private const string SignBinaryWithPfxCmd = "sign /fd \"{0}\" /f \"{1}\" /t \"{2}\" /p \"{3}\" \"{4}\"";
         private const string SignBinaryWithCertCmd = "sign /fd \"{0}\" /sha1 \"{1}\" /a /t \"{2}\" \"{3}\"";
-        private static string _signtool = EnsureSignTool();
         private static StringBuilder _output = new StringBuilder();
         private static StringBuilder _error = new StringBuilder();
 
@@ -214,7 +212,7 @@ namespace CodeTitans.Signature
             }
             string output;
             string error;
-            int exitCode = ExecuteCommand(command, out output, out error);
+            int exitCode = SignToolRunner.ExecuteCommand(command, out output, out error);
             if (!String.IsNullOrEmpty(output))
             {
                 _output.AppendLine(output);
@@ -234,7 +232,7 @@ namespace CodeTitans.Signature
 
             string output;
             string error;
-            int exitCode = ExecuteCommand(command, out output, out error);
+            int exitCode = SignToolRunner.ExecuteCommand(command, out output, out error);
             return exitCode == 0;
         }
 
@@ -255,92 +253,6 @@ namespace CodeTitans.Signature
 
             File.Move(filePath, newFilePath);
             return newFilePath;
-        }
-
-        private static int ExecuteCommand(string arguments, out string output, out string error)
-        {
-            if (Signtool == null)
-            {
-                throw new ArgumentException("Cannot find signtool.exe");
-            }
-
-            ProcessStartInfo procStartInfo = new ProcessStartInfo(Signtool, arguments);
-            procStartInfo.CreateNoWindow = true;
-            procStartInfo.RedirectStandardOutput = true;
-            procStartInfo.RedirectStandardError = true;
-            procStartInfo.UseShellExecute = false;
-
-            Process proc = new Process();
-            proc.StartInfo = procStartInfo;
-            int exitCode = -1;
-            try
-            {
-                proc.Start();
-                output = proc.StandardOutput.ReadToEnd();
-                error = proc.StandardError.ReadToEnd();
-                proc.WaitForExit();
-                exitCode = proc.ExitCode;
-            }
-            finally
-            {
-                proc.Close();
-            }
-
-            return exitCode;
-        }
-        
-        private static string Signtool
-        {
-            get
-            {
-                if (_signtool == null)
-                {
-                    _signtool = EnsureSignTool();
-                }
-                return _signtool;
-            }
-        }
-
-        private static string EnsureSignTool()
-        {
-            var programFilesX86 = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86);
-
-            if (string.IsNullOrEmpty(programFilesX86))
-            {
-                programFilesX86 = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles);
-            }
-
-            string signtool = Path.Combine(programFilesX86, "Windows Kits", "8.1", "bin", "x64", "signtool.exe");
-            if (File.Exists(signtool))
-            {
-                return signtool;
-            }
-
-            signtool = Path.Combine(programFilesX86, "Windows Kits", "8.1", "bin", "x86", "signtool.exe");
-            if (File.Exists(signtool))
-            {
-                return signtool;
-            }
-
-            signtool = Path.Combine(programFilesX86, "Windows Kits", "8.0", "bin", "x64", "signtool.exe");
-            if (File.Exists(signtool))
-            {
-                return signtool;
-            }
-
-            signtool = Path.Combine(programFilesX86, "Windows Kits", "8.0", "bin", "x86", "signtool.exe");
-            if (File.Exists(signtool))
-            {
-                return signtool;
-            }
-
-            signtool = Path.Combine(programFilesX86, "Microsoft SDKs", "Windows", "v7.1A", "Bin", "signtool.exe");
-            if (File.Exists(signtool))
-            {
-                return signtool;
-            }
-
-            return null;
         }
     }
 }
