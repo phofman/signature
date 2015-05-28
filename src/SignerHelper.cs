@@ -14,9 +14,6 @@ namespace CodeTitans.Signature
     /// </summary>
     static class SignerHelper
     {
-        private static StringBuilder _output = new StringBuilder();
-        private static StringBuilder _error = new StringBuilder();
-
         /// <summary>
         /// Signs the binary.
         /// </summary>
@@ -41,47 +38,31 @@ namespace CodeTitans.Signature
                 return;
             }
 
-            // is it a VSIX package?
             var extension = Path.GetExtension(binaryPath);
+            var outputBuffer = new StringBuilder();
+            var errorBuffer = new StringBuilder();
+            bool result;
 
+            // is it a VSIX package?
             if (string.Compare(extension, ".vsix", StringComparison.OrdinalIgnoreCase) == 0)
             {
-                if (signContentInVsix)
-                {
-                    var result2 = SignVsixContent(binaryPath, arguments);
-                    if (!result2)
-                    {
-                        if (finishAction != null)
-                        {
-                            finishAction(new SignCompletionEventArgs(false, "Signing of binary contained in VSIX failed.", _error.ToString()));
-                        }
-                        return;
-                    }
-                }
-
-                SignVsix(binaryPath, arguments, finishAction);
-                return;
-            }
-
-            // or just a single binary to sign?
-            var result = SignBinary(binaryPath, arguments);
-            if (result)
-            {
-                if (finishAction != null)
-                {
-                    finishAction(new SignCompletionEventArgs(true, _output.ToString(), null));
-                }
+                result = signContentInVsix
+                    ? SignVsixContent(binaryPath, arguments, outputBuffer, errorBuffer)
+                    : SignVsix(binaryPath, arguments, outputBuffer, errorBuffer);
             }
             else
             {
-                if (finishAction != null)
-                {
-                    finishAction(new SignCompletionEventArgs(false, "Signing of binary failed.", _error.ToString()));
-                }
+                // or just a single binary to sign?
+                result = SignBinary(binaryPath, arguments, outputBuffer, errorBuffer);
+            }
+
+            if (finishAction != null)
+            {
+                finishAction(new SignCompletionEventArgs(result, outputBuffer.ToString(), errorBuffer.ToString()));
             }
         }
 
-        private static bool SignVsixContent(string binaryPath, SignData arguments)
+        private static bool SignVsixContent(string binaryPath, SignData arguments, StringBuilder outputBuffer, StringBuilder errorBuffer)
         {
             bool success = true;
 
@@ -101,7 +82,7 @@ namespace CodeTitans.Signature
                                 Where(f => !VerifyBinaryDigitalSignature(f)).ToArray();
             foreach (var file in filesToSign)
             {
-                success = SignBinary(file, arguments);
+                success = SignBinary(file, arguments, outputBuffer, errorBuffer);
                 if (!success)
                 {
                     break;
@@ -117,7 +98,7 @@ namespace CodeTitans.Signature
             return success;
         }
 
-        private static void SignVsix(string vsixPackagePath, SignData arguments, Action<SignCompletionEventArgs> finishAction)
+        private static bool SignVsix(string vsixPackagePath, SignData arguments, StringBuilder outputBuffer, StringBuilder errorBuffer)
         {
             if (arguments == null)
                 throw new ArgumentNullException("arguments");
@@ -147,26 +128,32 @@ namespace CodeTitans.Signature
                 }
                 catch (CryptographicException ex)
                 {
-                    if (finishAction != null)
-                        finishAction(new SignCompletionEventArgs(false, null, "Signing could not be completed: " + ex.Message));
-                    return;
+                    if (errorBuffer != null)
+                    {
+                        errorBuffer.AppendLine("Signing could not be completed: " + ex.Message);
+                    }
+                    return false;
                 }
 
                 if (ValidateSignatures(package))
                 {
-                    _output.AppendLine("VSIX signing completed successfully.");
-                    if (finishAction != null)
-                        finishAction(new SignCompletionEventArgs(true, _output.ToString(), null));
+                    if (outputBuffer != null)
+                    {
+                        outputBuffer.AppendLine("VSIX signing completed successfully.");
+                    }
+                    return true;
                 }
-                else
+
+                if (outputBuffer != null)
                 {
-                    if (finishAction != null)
-                        finishAction(new SignCompletionEventArgs(false, "The digital signature is invalid, there may have been a problem with the signing process.", _error.ToString()));
+                    outputBuffer.AppendLine("The digital signature is invalid, there may have been a problem with the signing process.");
                 }
+
+                return false;
             }
         }
 
-        private static bool SignBinary(string path, SignData arguments)
+        private static bool SignBinary(string path, SignData arguments, StringBuilder outputBuffer, StringBuilder errorBuffer)
         {
             if (arguments == null)
                 throw new ArgumentNullException("arguments");
@@ -174,15 +161,17 @@ namespace CodeTitans.Signature
             string output;
             string error;
             int exitCode = SignToolRunner.ExecuteCommand(path, arguments, out output, out error);
-            if (!String.IsNullOrEmpty(output))
+
+            if (!string.IsNullOrEmpty(output) && outputBuffer != null)
             {
-                _output.AppendLine(output);
+                outputBuffer.AppendLine(output);
             }
             
-            if (!String.IsNullOrEmpty(error))
+            if (!string.IsNullOrEmpty(error) && errorBuffer != null)
             {
-                _error.AppendLine(error);
-            }            
+                errorBuffer.AppendLine(error);
+            }
+
             return exitCode == 0;
         }
 
