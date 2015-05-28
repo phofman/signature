@@ -212,14 +212,25 @@ namespace CodeTitans.Signature
             string hashAlgorithm = hashAlgorithmComboBox.SelectedItem != null ? ((ComboBoxItem)hashAlgorithmComboBox.SelectedItem).Data as string : "SHA1";
             if (cmbCertificates.Enabled)
             {
-                SignerHelper.Sign(txtBinaryPath.Text, certificate, null, null, timestampServer, hashAlgorithm, _signContentInVsix);
+                SignerHelper.Sign(txtBinaryPath.Text, certificate, null, null, timestampServer, hashAlgorithm, _signContentInVsix, OnFinished);
             }
             else
             {
-                SignerHelper.Sign(txtBinaryPath.Text, null, txtCertificatePath.Text, txtCertificatePassword.Text, timestampServer, hashAlgorithm, _signContentInVsix);
+                SignerHelper.Sign(txtBinaryPath.Text, null, txtCertificatePath.Text, txtCertificatePassword.Text, timestampServer, hashAlgorithm, _signContentInVsix, OnFinished);
             }
 
             ShowOpenResult = true;
+        }
+
+        private void OnFinished(SignEventArgs e)
+        {
+            if (InvokeRequired)
+            {
+                Invoke(new Action<SignEventArgs>(OnFinished), e);
+                return;
+            }
+
+            txtLog.Text = string.Concat(e.Output, string.IsNullOrEmpty(e.Output) ? string.Empty : Environment.NewLine, e.Error);
         }
 
         private void homeLink_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)

@@ -6,6 +6,7 @@ using System.IO.Compression;
 using System.IO.Packaging;
 using System.Linq;
 using System.Security.Cryptography.X509Certificates;
+using System.Text;
 using System.Windows.Forms;
 
 namespace CodeTitans.Signature
@@ -19,6 +20,8 @@ namespace CodeTitans.Signature
         private const string SignBinaryWithPfxCmd = " sign /fd \"{0}\" /f \"{1}\" /t \"{2}\" /p \"{3}\" \"{4}\"";
         private const string SignBinaryWithCertCmd = " sign /fd \"{0}\" /sha1 \"{1}\" /a /t \"{2}\" \"{3}\"";
         private static string _signtool = EnsureSignTool();
+        private static StringBuilder _output = new StringBuilder();
+        private static StringBuilder _error = new StringBuilder();
 
         /// <summary>
         /// Signs the binary.
@@ -29,7 +32,8 @@ namespace CodeTitans.Signature
                                 string certificatePassword,
                                 string timestampServer,
                                 string hashAlgorithm,
-                                bool signContentInVsix)
+                                bool signContentInVsix,
+                                Action<SignEventArgs> finishAction)
         {
             if (string.IsNullOrEmpty(binaryPath))
                 throw new ArgumentNullException("binaryPath");
@@ -62,23 +66,32 @@ namespace CodeTitans.Signature
                     success = SignVsixContent(binaryPath, thumbPrint, certificatePath, certificatePassword, timestampServer, hashAlgorithm);
                     if (!success)
                     {
-                        MessageBox.Show("Signing of binary contained in VSIX failed.", "VSIX signing failed");
+                        if (finishAction != null)
+                        {
+                            finishAction(new SignEventArgs("Signing of binary contained in VSIX failed.", _error.ToString()));
+                        }
                         return;
                     }
                 }
 
-                SignVsix(binaryPath, certificate, hashAlgorithm);
+                SignVsix(binaryPath, certificate, hashAlgorithm, finishAction);
                 return;
             }
 
             success = SignBinary(binaryPath, thumbPrint, certificatePath, certificatePassword, timestampServer, hashAlgorithm);
             if (success)
             {
-                MessageBox.Show("The signing completed successfully.", "Extension Signing Complete");
+                if (finishAction != null)
+                {
+                    finishAction(new SignEventArgs(_output.ToString(), _error.ToString()));
+                }
             }
             else
             {
-                MessageBox.Show("The digital signature is invalid, there may have been a problem with the signing process.", "Invalid Signature");
+                if (finishAction != null)
+                {
+                    finishAction(new SignEventArgs("Signing of binary failed.", _error.ToString()));
+                }
             }
         }
 
@@ -123,7 +136,7 @@ namespace CodeTitans.Signature
             return success;
         }
 
-        private static void SignVsix(string vsixPackagePath, X509Certificate2 certificate, string hashAlgorithm)
+        private static void SignVsix(string vsixPackagePath, X509Certificate2 certificate, string hashAlgorithm, Action<SignEventArgs> finishAction)
         {
             // many thanks to Jeff Wilcox for the idea and code
             // check for details: http://www.jeff.wilcox.name/2010/03/vsixcodesigning/
@@ -132,14 +145,14 @@ namespace CodeTitans.Signature
                 var signatureManager = new PackageDigitalSignatureManager(package);
                 signatureManager.CertificateOption = CertificateEmbeddingOption.InSignaturePart;
 
-                //if (hashAlgorithm.Equals("SHA256", StringComparison.OrdinalIgnoreCase))
-                //{
-                //    signatureManager.HashAlgorithm = "http://www.w3.org/2001/04/xmldsig#rsa-sha256";
-                //}
-                //else if (hashAlgorithm.Equals("SHA512", StringComparison.OrdinalIgnoreCase))
-                //{
-                //    signatureManager.HashAlgorithm = "http://www.w3.org/2001/04/xmldsig-more#rsa-sha512";
-                //}
+                if (hashAlgorithm.Equals("SHA256", StringComparison.OrdinalIgnoreCase))
+                {
+                    signatureManager.HashAlgorithm = "http://www.w3.org/2001/04/xmlenc#sha256";
+                }
+                else if (hashAlgorithm.Equals("SHA512", StringComparison.OrdinalIgnoreCase))
+                {
+                    signatureManager.HashAlgorithm = "http://www.w3.org/2001/04/xmldsig-more#rsa-sha512";
+                }
 
                 var partsToSign = new List<Uri>();
                 foreach (var packagePart in package.GetParts())
@@ -157,17 +170,21 @@ namespace CodeTitans.Signature
                 }
                 catch (System.Security.Cryptography.CryptographicException ex)
                 {
-                    MessageBox.Show(ex.ToString(), "Extension Signing Complete");
+                    if (finishAction != null)
+                        finishAction(new SignEventArgs(null, "Signing could not be completed: " + ex.Message));
                     return;
                 }
 
                 if (ValidateSignatures(package))
                 {
-                    MessageBox.Show("The signing completed successfully.", "Extension Signing Complete");
+                    _output.AppendLine("VSIX signing completed successfully.");
+                    if (finishAction != null)
+                        finishAction(new SignEventArgs(_output.ToString(), _error.ToString()));
                 }
                 else
                 {
-                    MessageBox.Show("The digital signature is invalid, there may have been a problem with the signing process.", "Invalid Signature");
+                    if (finishAction != null)
+                        finishAction(new SignEventArgs("The digital signature is invalid, there may have been a problem with the signing process.", _error.ToString()));
                 }
             }
         }
@@ -241,6 +258,7 @@ namespace CodeTitans.Signature
             ProcessStartInfo procStartInfo = new ProcessStartInfo(Signtool, command);
             procStartInfo.CreateNoWindow = true;
             procStartInfo.RedirectStandardOutput = true;
+            procStartInfo.RedirectStandardError = true;
             procStartInfo.UseShellExecute = false;
 
             Process proc = new Process();
@@ -249,7 +267,9 @@ namespace CodeTitans.Signature
             try
             {
                 proc.Start();
-                proc.WaitForExit(5000);
+                _output.AppendLine(proc.StandardOutput.ReadToEnd());
+                _error.AppendLine(proc.StandardError.ReadToEnd());
+                proc.WaitForExit();
                 exitCode = proc.ExitCode;
             }
             finally
