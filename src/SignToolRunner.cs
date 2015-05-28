@@ -9,18 +9,75 @@ namespace CodeTitans.Signature
     /// </summary>
     static class SignToolRunner
     {
+        private const string VerifyDigitalSignatureCmd = "verify /pa \"{0}\"";
+        private const string SignBinaryWithPfxCmd = "sign /fd \"{0}\" /f \"{1}\" /t \"{2}\" /p \"{3}\" \"{4}\"";
+        private const string SignBinaryWithCertCmd = "sign /fd \"{0}\" /sha1 \"{1}\" /a /t \"{2}\" \"{3}\"";
+
+        private static string _signtoolPath;
+
+        /// <summary>
+        /// Invokes signtool.exe and returns exit-code along with standard-output and standard-error.
+        /// </summary>
+        public static int ExecuteCommand(string path, SignData arguments, out string output, out string error)
+        {
+            if (string.IsNullOrEmpty(path))
+                throw new ArgumentNullException("path");
+
+            string commandArguments;
+
+            if (!string.IsNullOrEmpty(arguments.Thumbprint))
+            {
+                // "sign /fd {0} /sha1 {1} /a /t {2} {3}"
+                commandArguments = String.Format(SignBinaryWithCertCmd,
+                                        arguments.HashAlgorithm,
+                                        arguments.Thumbprint,
+                                        arguments.TimestampServer,
+                                        path);
+            }
+            else
+            {
+                // "sign /fd {0} /f {1} /t {2} /p {3} {4}"
+                commandArguments = String.Format(SignBinaryWithPfxCmd,
+                                        arguments.HashAlgorithm,
+                                        arguments.CertificatePath,
+                                        arguments.TimestampServer,
+                                        arguments.CertificatePassword,
+                                        path);
+            }
+
+            return ExecuteCommand(commandArguments, out output, out error);
+        }
+
+        /// <summary>
+        /// Verifies digital signature of specified binary.
+        /// </summary>
+        public static int ExecuteSignatureVerification(string path, out string output, out string error)
+        {
+            if (string.IsNullOrEmpty(path))
+                throw new ArgumentNullException("path");
+
+            // Verify digital signature
+            string commandArguments = String.Format(VerifyDigitalSignatureCmd, path);
+
+            return ExecuteCommand(commandArguments, out output, out error);
+        }
+
         /// <summary>
         /// Invokes signtool.exe and returns exit-code along with standard-output and standard-error.
         /// </summary>
         public static int ExecuteCommand(string arguments, out string output, out string error)
         {
-            var signtoolPath = EnsureSignTool();
-            if (string.IsNullOrEmpty(signtoolPath))
+            if (string.IsNullOrEmpty(_signtoolPath))
+            {
+                _signtoolPath = EnsureSignTool();
+            }
+
+            if (string.IsNullOrEmpty(_signtoolPath))
             {
                 throw new ArgumentException("Cannot find signtool.exe");
             }
 
-            var procStartInfo = new ProcessStartInfo(signtoolPath, arguments);
+            var procStartInfo = new ProcessStartInfo(_signtoolPath, arguments);
             procStartInfo.CreateNoWindow = true;
             procStartInfo.RedirectStandardOutput = true;
             procStartInfo.RedirectStandardError = true;

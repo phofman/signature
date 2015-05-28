@@ -14,9 +14,6 @@ namespace CodeTitans.Signature
     /// </summary>
     static class SignerHelper
     {
-        private const string VerifyDigitalSignatureCmd = "verify /pa \"{0}\"";
-        private const string SignBinaryWithPfxCmd = "sign /fd \"{0}\" /f \"{1}\" /t \"{2}\" /p \"{3}\" \"{4}\"";
-        private const string SignBinaryWithCertCmd = "sign /fd \"{0}\" /sha1 \"{1}\" /a /t \"{2}\" \"{3}\"";
         private static StringBuilder _output = new StringBuilder();
         private static StringBuilder _error = new StringBuilder();
 
@@ -174,29 +171,9 @@ namespace CodeTitans.Signature
             if (arguments == null)
                 throw new ArgumentNullException("arguments");
 
-            string command;
-            if (!string.IsNullOrEmpty(arguments.Thumbprint))
-            {
-                // "sign /fd {0} /sha1 {1} /a /t {2} {3}"
-                command = String.Format(SignBinaryWithCertCmd,
-                                        arguments.HashAlgorithm,
-                                        arguments.Thumbprint,
-                                        arguments.TimestampServer,
-                                        path);
-            }
-            else
-            {
-                // "sign /fd {0} /f {1} /t {2} /p {3} {4}"
-                command = String.Format(SignBinaryWithPfxCmd,
-                                        arguments.HashAlgorithm,
-                                        arguments.CertificatePath,
-                                        arguments.TimestampServer,
-                                        arguments.CertificatePassword,
-                                        path);
-            }
             string output;
             string error;
-            int exitCode = SignToolRunner.ExecuteCommand(command, out output, out error);
+            int exitCode = SignToolRunner.ExecuteCommand(path, arguments, out output, out error);
             if (!String.IsNullOrEmpty(output))
             {
                 _output.AppendLine(output);
@@ -212,11 +189,9 @@ namespace CodeTitans.Signature
         private static bool VerifyBinaryDigitalSignature(string path)
         {
             // Verify digital signature
-            string command = String.Format(VerifyDigitalSignatureCmd, path);
-
             string output;
             string error;
-            int exitCode = SignToolRunner.ExecuteCommand(command, out output, out error);
+            int exitCode = SignToolRunner.ExecuteSignatureVerification(path, out output, out error);
             return exitCode == 0;
         }
 
