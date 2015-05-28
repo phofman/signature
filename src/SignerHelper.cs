@@ -5,7 +5,6 @@ using System.IO.Compression;
 using System.IO.Packaging;
 using System.Linq;
 using System.Security.Cryptography;
-using System.Security.Cryptography.X509Certificates;
 using System.Text;
 
 namespace CodeTitans.Signature
@@ -24,46 +23,35 @@ namespace CodeTitans.Signature
         /// <summary>
         /// Signs the binary.
         /// </summary>
-        public static void Sign(string binaryPath,
-                                X509Certificate2 certificate,
-                                string certificatePath,
-                                string certificatePassword,
-                                string timestampServer,
-                                string hashAlgorithm,
-                                bool signContentInVsix,
-                                Action<SignCompletionEventArgs> finishAction)
+        public static void Sign(string binaryPath, SignData arguments, bool signContentInVsix, Action<SignCompletionEventArgs> finishAction)
         {
             if (string.IsNullOrEmpty(binaryPath))
                 throw new ArgumentNullException("binaryPath");
-            if (certificate == null && string.IsNullOrEmpty(certificatePath))
-                throw new ArgumentException("certificate");
+            if (arguments == null)
+                throw new ArgumentNullException("arguments");
 
             // try to load the certificate:
-            if (certificate == null)
+            try
             {
-                try
+                arguments.VerifyCertificate();
+            }
+            catch (Exception ex)
+            {
+                if (finishAction != null)
                 {
-                    certificate = new X509Certificate2(certificatePath, certificatePassword);
+                    finishAction(new SignCompletionEventArgs(false, "Certificate error.", ex.Message));
                 }
-                catch (Exception ex)
-                {
-                    if (finishAction != null)
-                    {
-                        finishAction(new SignCompletionEventArgs(false, "Certificate error.", ex.Message));
-                    }
-                    return;
-                }
+                return;
             }
 
             // is it a VSIX package?
             var extension = Path.GetExtension(binaryPath);
-            string thumbPrint = certificate.Thumbprint;
 
             if (string.Compare(extension, ".vsix", StringComparison.OrdinalIgnoreCase) == 0)
             {
                 if (signContentInVsix)
                 {
-                    var result2 = SignVsixContent(binaryPath, thumbPrint, certificatePath, certificatePassword, timestampServer, hashAlgorithm);
+                    var result2 = SignVsixContent(binaryPath, arguments);
                     if (!result2)
                     {
                         if (finishAction != null)
@@ -74,12 +62,12 @@ namespace CodeTitans.Signature
                     }
                 }
 
-                SignVsix(binaryPath, certificate, hashAlgorithm, finishAction);
+                SignVsix(binaryPath, arguments, finishAction);
                 return;
             }
 
             // or just a single binary to sign?
-            var result = SignBinary(binaryPath, thumbPrint, certificatePath, certificatePassword, timestampServer, hashAlgorithm);
+            var result = SignBinary(binaryPath, arguments);
             if (result)
             {
                 if (finishAction != null)
@@ -96,12 +84,7 @@ namespace CodeTitans.Signature
             }
         }
 
-        private static bool SignVsixContent(string binaryPath,
-                                            string thumbPrint,
-                                            string certificatePath,
-                                            string certificatePassword,
-                                            string timestampServer,
-                                            string hashAlgorithm)
+        private static bool SignVsixContent(string binaryPath, SignData arguments)
         {
             bool success = true;
 
@@ -121,7 +104,7 @@ namespace CodeTitans.Signature
                                 Where(f => !VerifyBinaryDigitalSignature(f)).ToArray();
             foreach (var file in filesToSign)
             {
-                success = SignBinary(file, thumbPrint, certificatePath, certificatePassword, timestampServer, hashAlgorithm);
+                success = SignBinary(file, arguments);
                 if (!success)
                 {
                     break;
@@ -137,8 +120,11 @@ namespace CodeTitans.Signature
             return success;
         }
 
-        private static void SignVsix(string vsixPackagePath, X509Certificate2 certificate, string hashAlgorithm, Action<SignCompletionEventArgs> finishAction)
+        private static void SignVsix(string vsixPackagePath, SignData arguments, Action<SignCompletionEventArgs> finishAction)
         {
+            if (arguments == null)
+                throw new ArgumentNullException("arguments");
+
             // many thanks to Jeff Wilcox for the idea and code
             // check for details: http://www.jeff.wilcox.name/2010/03/vsixcodesigning/
             using (var package = Package.Open(vsixPackagePath))
@@ -160,7 +146,7 @@ namespace CodeTitans.Signature
 
                 try
                 {
-                    signatureManager.Sign(partsToSign, certificate);
+                    signatureManager.Sign(partsToSign, arguments.Certificate);
                 }
                 catch (CryptographicException ex)
                 {
@@ -183,31 +169,29 @@ namespace CodeTitans.Signature
             }
         }
 
-        private static bool SignBinary(string path,
-                                       string thumbPrint,
-                                       string certPath,
-                                       string certPassword,
-                                       string timestampServer,
-                                       string hashAlgorithm)
+        private static bool SignBinary(string path, SignData arguments)
         {
+            if (arguments == null)
+                throw new ArgumentNullException("arguments");
+
             string command;
-            if (thumbPrint != null)
+            if (!string.IsNullOrEmpty(arguments.Thumbprint))
             {
                 // "sign /fd {0} /sha1 {1} /a /t {2} {3}"
                 command = String.Format(SignBinaryWithCertCmd,
-                                        hashAlgorithm,
-                                        thumbPrint,
-                                        timestampServer,
+                                        arguments.HashAlgorithm,
+                                        arguments.Thumbprint,
+                                        arguments.TimestampServer,
                                         path);
             }
             else
             {
                 // "sign /fd {0} /f {1} /t {2} /p {3} {4}"
                 command = String.Format(SignBinaryWithPfxCmd,
-                                        hashAlgorithm,
-                                        certPath,
-                                        timestampServer,
-                                        certPassword,
+                                        arguments.HashAlgorithm,
+                                        arguments.CertificatePath,
+                                        arguments.TimestampServer,
+                                        arguments.CertificatePassword,
                                         path);
             }
             string output;

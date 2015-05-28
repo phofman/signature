@@ -210,15 +210,10 @@ namespace CodeTitans.Signature
 
             var timestampServer = cmbTimestampServers.SelectedItem != null ? ((ComboBoxItem)cmbTimestampServers.SelectedItem).Data as string : null;
             string hashAlgorithm = hashAlgorithmComboBox.SelectedItem != null ? ((ComboBoxItem)hashAlgorithmComboBox.SelectedItem).Data as string : "SHA1";
-            if (cmbCertificates.Enabled)
-            {
-                SignerHelper.Sign(txtBinaryPath.Text, certificate, null, null, timestampServer, hashAlgorithm, _signContentInVsix, OnFinished);
-            }
-            else
-            {
-                SignerHelper.Sign(txtBinaryPath.Text, null, txtCertificatePath.Text, txtCertificatePassword.Text, timestampServer, hashAlgorithm, _signContentInVsix, OnFinished);
-            }
+            var arguments = cmbCertificates.Enabled ? new SignData(certificate, null, null, timestampServer, hashAlgorithm)
+                                                    : new SignData(null, txtCertificatePath.Text, txtCertificatePassword.Text, timestampServer, hashAlgorithm);
 
+            SignerHelper.Sign(txtBinaryPath.Text, arguments, _signContentInVsix, OnFinished);
             ShowOpenResult = true;
         }
 
