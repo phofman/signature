@@ -224,10 +224,9 @@ namespace CodeTitans.Signature
 
         private void OnFinished(SignEventArgs e)
         {
-            if (InvokeRequired)
+            if (e.Success)
             {
-                Invoke(new Action<SignEventArgs>(OnFinished), e);
-                return;
+                MessageBox.Show("Signing successfully completed.");
             }
 
             txtLog.Text = string.Concat(e.Output, string.IsNullOrEmpty(e.Output) ? string.Empty : Environment.NewLine, e.Error);

@@ -68,7 +68,7 @@ namespace CodeTitans.Signature
                     {
                         if (finishAction != null)
                         {
-                            finishAction(new SignEventArgs("Signing of binary contained in VSIX failed.", _error.ToString()));
+                            finishAction(new SignEventArgs(false, "Signing of binary contained in VSIX failed.", _error.ToString()));
                         }
                         return;
                     }
@@ -83,14 +83,14 @@ namespace CodeTitans.Signature
             {
                 if (finishAction != null)
                 {
-                    finishAction(new SignEventArgs(_output.ToString(), _error.ToString()));
+                    finishAction(new SignEventArgs(true, _output.ToString(), null));
                 }
             }
             else
             {
                 if (finishAction != null)
                 {
-                    finishAction(new SignEventArgs("Signing of binary failed.", _error.ToString()));
+                    finishAction(new SignEventArgs(false, "Signing of binary failed.", _error.ToString()));
                 }
             }
         }
@@ -171,7 +171,7 @@ namespace CodeTitans.Signature
                 catch (System.Security.Cryptography.CryptographicException ex)
                 {
                     if (finishAction != null)
-                        finishAction(new SignEventArgs(null, "Signing could not be completed: " + ex.Message));
+                        finishAction(new SignEventArgs(false, null, "Signing could not be completed: " + ex.Message));
                     return;
                 }
 
@@ -179,12 +179,12 @@ namespace CodeTitans.Signature
                 {
                     _output.AppendLine("VSIX signing completed successfully.");
                     if (finishAction != null)
-                        finishAction(new SignEventArgs(_output.ToString(), _error.ToString()));
+                        finishAction(new SignEventArgs(true, _output.ToString(), null));
                 }
                 else
                 {
                     if (finishAction != null)
-                        finishAction(new SignEventArgs("The digital signature is invalid, there may have been a problem with the signing process.", _error.ToString()));
+                        finishAction(new SignEventArgs(false, "The digital signature is invalid, there may have been a problem with the signing process.", _error.ToString()));
                 }
             }
         }
@@ -216,8 +216,18 @@ namespace CodeTitans.Signature
                                         certPassword,
                                         path);
             }
+            string output;
+            string error;
+            int exitCode = ExecuteCommand(command, out output, out error);
+            if (!String.IsNullOrEmpty(output))
+            {
+                _output.AppendLine(output);
+            }
             
-            int exitCode = ExecuteCommand(command);
+            if (!String.IsNullOrEmpty(error))
+            {
+                _error.AppendLine(error);
+            }            
             return exitCode == 0;
         }
 
@@ -225,7 +235,10 @@ namespace CodeTitans.Signature
         {
             // Verify digital signature
             string command = String.Format(VerifyDigitalSignatureCmd, path);
-            int exitCode = ExecuteCommand(command);
+
+            string output;
+            string error;
+            int exitCode = ExecuteCommand(command, out output, out error);
             return exitCode == 0;
         }
 
@@ -248,7 +261,7 @@ namespace CodeTitans.Signature
             return newFilePath;
         }
 
-        private static int ExecuteCommand(string command)
+        private static int ExecuteCommand(string command, out string output, out string error)
         {
             if (Signtool == null)
             {
@@ -267,8 +280,8 @@ namespace CodeTitans.Signature
             try
             {
                 proc.Start();
-                _output.AppendLine(proc.StandardOutput.ReadToEnd());
-                _error.AppendLine(proc.StandardError.ReadToEnd());
+                output = proc.StandardOutput.ReadToEnd();
+                error = proc.StandardError.ReadToEnd();
                 proc.WaitForExit();
                 exitCode = proc.ExitCode;
             }
