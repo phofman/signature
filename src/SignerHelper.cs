@@ -67,7 +67,8 @@ namespace CodeTitans.Signature
             bool success = true;
 
             // Step 1: rename vsix to zip
-            string zipPackagePath = RenameExtention(binaryPath, ".zip");
+            string zipPackagePath = Path.ChangeExtension(binaryPath, ".zip");
+            File.Move(binaryPath, zipPackagePath);
 
             // Step 2: extract files and delete the zip file
             string fileDir = Path.GetDirectoryName(binaryPath);
@@ -94,7 +95,8 @@ namespace CodeTitans.Signature
             Directory.Delete(unZippedDir, true);
 
             // Step 5: Rename zip file to vsix
-            string vsixPackagePath = RenameExtention(zipPackagePath, ".vsix");
+            string vsixPackagePath = Path.ChangeExtension(zipPackagePath, ".vsix");
+            File.Move(zipPackagePath, vsixPackagePath);
             return success;
         }
 
@@ -190,17 +192,6 @@ namespace CodeTitans.Signature
             bool isSigned = signatureManager.IsSigned;
             var verifyResult = signatureManager.VerifySignatures(true);
             return isSigned && verifyResult == VerifyResult.Success;
-        }
-
-        private static string RenameExtention(string filePath, string toExtension)
-        {
-            string fileDir = Path.GetDirectoryName(filePath);
-            string fileName = Path.GetFileNameWithoutExtension(filePath);
-
-            string newFilePath = Path.Combine(fileDir, String.Format("{0}{1}", fileName, toExtension));
-
-            File.Move(filePath, newFilePath);
-            return newFilePath;
         }
     }
 }
