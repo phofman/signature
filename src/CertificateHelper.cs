@@ -39,5 +39,10 @@ namespace CodeTitans.Signature
         {
             return new[] { "http://time.certum.pl", "http://timestamp.verisign.com/scripts/timstamp.dll", "http://timestamp.comodoca.com/authenticode" };
         }
+
+        public static IEnumerable<string> LoadHashAlgorithms()
+        {
+            return new[] { "SHA1", "SHA256", "SHA512" };
+        }
     }
 }
