@@ -145,14 +145,7 @@ namespace CodeTitans.Signature
                 var signatureManager = new PackageDigitalSignatureManager(package);
                 signatureManager.CertificateOption = CertificateEmbeddingOption.InSignaturePart;
 
-                if (hashAlgorithm.Equals("SHA256", StringComparison.OrdinalIgnoreCase))
-                {
-                    signatureManager.HashAlgorithm = "http://www.w3.org/2001/04/xmlenc#sha256";
-                }
-                else if (hashAlgorithm.Equals("SHA512", StringComparison.OrdinalIgnoreCase))
-                {
-                    signatureManager.HashAlgorithm = "http://www.w3.org/2001/04/xmldsig-more#rsa-sha512";
-                }
+                // TODO: support signing VSIX with digest algorithm set to SHA256 
 
                 var partsToSign = new List<Uri>();
                 foreach (var packagePart in package.GetParts())
