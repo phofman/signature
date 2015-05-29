@@ -29,23 +29,31 @@ namespace CodeTitans.Signature
             var errorBuffer = new StringBuilder();
             bool result = false;
 
-            // is it a VSIX package?
-            if (string.Compare(extension, ".vsix", StringComparison.OrdinalIgnoreCase) == 0)
+            try
             {
-                if (signContentInVsix)
+                // is it a VSIX package?
+                if (string.Compare(extension, ".vsix", StringComparison.OrdinalIgnoreCase) == 0)
                 {
-                    result = SignVsixContent(binaryPath, arguments, outputBuffer, errorBuffer);
-                }
+                    if (signContentInVsix)
+                    {
+                        result = SignVsixContent(binaryPath, arguments, outputBuffer, errorBuffer);
+                    }
 
-                if (!signContentInVsix || result)
+                    if (!signContentInVsix || result)
+                    {
+                        result = SignVsix(binaryPath, arguments, outputBuffer, errorBuffer);
+                    }
+                }
+                else
                 {
-                    result = SignVsix(binaryPath, arguments, outputBuffer, errorBuffer);
+                    // or just a single binary to sign?
+                    result = SignBinary(binaryPath, arguments, outputBuffer, errorBuffer);
                 }
             }
-            else
+            catch (Exception ex)
             {
-                // or just a single binary to sign?
-                result = SignBinary(binaryPath, arguments, outputBuffer, errorBuffer);
+                result = false;
+                outputBuffer.AppendLine("Signing internally failed: " + ex.Message);
             }
 
             if (finishAction != null)
@@ -60,6 +68,10 @@ namespace CodeTitans.Signature
 
             // Step 1: rename vsix to zip
             string zipPackagePath = Path.ChangeExtension(binaryPath, ".zip");
+            if (File.Exists(zipPackagePath))
+            {
+                File.Delete(zipPackagePath);
+            }
             File.Move(binaryPath, zipPackagePath);
 
             // Step 2: extract files and delete the zip file
