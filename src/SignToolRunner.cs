@@ -10,7 +10,7 @@ namespace CodeTitans.Signature
     static class SignToolRunner
     {
         private const string VerifyDigitalSignatureCmd = "verify /pa \"{0}\"";
-        private const string SignBinaryWithPfxCmd = "sign /fd \"{0}\" /f \"{1}\" /t \"{2}\" /p \"{3}\" \"{4}\"";
+        private const string SignBinaryWithPfxCmd = "sign /fd \"{0}\" /t \"{1}\" /f \"{2}\" /p \"{3}\" \"{4}\"";
         private const string SignBinaryWithCertCmd = "sign /fd \"{0}\" /sha1 \"{1}\" /a /t \"{2}\" \"{3}\"";
 
         private static string _signtoolPath;
@@ -27,7 +27,6 @@ namespace CodeTitans.Signature
 
             if (!string.IsNullOrEmpty(arguments.Thumbprint))
             {
-                // "sign /fd {0} /sha1 {1} /a /t {2} {3}"
                 commandArguments = String.Format(SignBinaryWithCertCmd,
                                         arguments.HashAlgorithm,
                                         arguments.Thumbprint,
@@ -36,11 +35,10 @@ namespace CodeTitans.Signature
             }
             else
             {
-                // "sign /fd {0} /f {1} /t {2} /p {3} {4}"
                 commandArguments = String.Format(SignBinaryWithPfxCmd,
                                         arguments.HashAlgorithm,
-                                        arguments.CertificatePath,
                                         arguments.TimestampServer,
+                                        arguments.CertificatePath,
                                         arguments.CertificatePassword,
                                         path);
             }
