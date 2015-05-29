@@ -97,7 +97,7 @@ namespace CodeTitans.Signature
             }
 
             // Step 4: Zip the extracted files
-            ZipFile.CreateFromDirectory(unZippedDir, zipPackagePath, CompressionLevel.NoCompression, false);
+            ZipFile.CreateFromDirectory(unZippedDir, zipPackagePath, CompressionLevel.Optimal, false);
             Directory.Delete(unZippedDir, true);
 
             // Step 5: Rename zip file to vsix
