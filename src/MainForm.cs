@@ -12,7 +12,6 @@ namespace CodeTitans.Signature
 
         private OpenFileDialog _openBinaryDialog;
         private OpenFileDialog _openCertDialog;
-        private bool _signContentInVsix = true;
 
         public MainForm()
         {
@@ -213,22 +212,22 @@ namespace CodeTitans.Signature
             var arguments = cmbCertificates.Enabled ? new SignData(certificate, null, null, timestampServer, hashAlgorithm)
                                                     : new SignData(null, txtCertificatePath.Text, txtCertificatePassword.Text, timestampServer, hashAlgorithm);
 
-            SignerHelper.Sign(txtBinaryPath.Text, arguments, _signContentInVsix, OnFinished);
+            SignerHelper.Sign(txtBinaryPath.Text, arguments, signContentInVsix.Checked, OnFinished);
             ShowOpenResult = true;
         }
 
         private void OnFinished(SignCompletionEventArgs e)
         {
+            txtLog.Text = string.Concat(e.Output, string.IsNullOrEmpty(e.Output) ? string.Empty : Environment.NewLine, e.Error);
+
             if (e.Success)
             {
-                MessageBox.Show("Signing successfully completed.");
+                MessageBox.Show("Signing successfully completed.", AppTitle, MessageBoxButtons.OK, MessageBoxIcon.None);
             }
             else
             {
-                MessageBox.Show("Signing failed.");
+                MessageBox.Show("Signing failed.", AppTitle, MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
-
-            txtLog.Text = string.Concat(e.Output, string.IsNullOrEmpty(e.Output) ? string.Empty : Environment.NewLine, e.Error);
         }
 
         private void homeLink_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
@@ -247,26 +246,16 @@ namespace CodeTitans.Signature
             DialogHelper.StartExplorerForFile(txtBinaryPath.Text);
         }
 
-        private void signContentInVsix_CheckedChanged(object sender, EventArgs e)
-        {
-            _signContentInVsix = this.signContentInVsix.Checked;
-        }
-
         private void txtBinaryPath_TextChanged(object sender, EventArgs e)
         {
-            if (!string.IsNullOrEmpty(this.txtBinaryPath.Text) && this.txtBinaryPath.Text.TrimEnd().EndsWith(".vsix", StringComparison.OrdinalIgnoreCase))
+            if (!string.IsNullOrEmpty(txtBinaryPath.Text) && txtBinaryPath.Text.TrimEnd().EndsWith(".vsix", StringComparison.OrdinalIgnoreCase))
             {
-                this.signContentInVsix.Enabled = true;
+                signContentInVsix.Enabled = true;
             }
             else
             {
-                this.signContentInVsix.Enabled = false;
+                signContentInVsix.Enabled = false;
             }
-        }
-
-        private void cmbTimestampServers_SelectedIndexChanged(object sender, EventArgs e)
-        {
-
         }
     }
 }
