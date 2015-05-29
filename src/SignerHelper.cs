@@ -119,7 +119,30 @@ namespace CodeTitans.Signature
                 var signatureManager = new PackageDigitalSignatureManager(package);
                 signatureManager.CertificateOption = CertificateEmbeddingOption.InSignaturePart;
 
-                // TODO: support signing VSIX with digest algorithm set to SHA256 
+                // select respective hashing algorithm (http://www.w3.org/TR/2001/WD-xmlenc-core-20010626/):
+                var requestedAlgorithm = string.IsNullOrEmpty(arguments.HashAlgorithm) ? null : arguments.HashAlgorithm.ToLower();
+                switch (requestedAlgorithm)
+                {
+                    case null:
+                        // use default
+                        break;
+                    case "sha1":
+                        signatureManager.HashAlgorithm = "http://www.w3.org/2000/09/xmldsig#sha1";
+                        break;
+                    case "sha256":
+                        signatureManager.HashAlgorithm = "http://www.w3.org/2001/04/xmlenc#sha256";
+                        break;
+                    case "sha512":
+                        signatureManager.HashAlgorithm = "http://www.w3.org/2001/04/xmlenc#sha512";
+                        break;
+                    default:
+                        // fail gracefully:
+                        if (errorBuffer != null)
+                        {
+                            errorBuffer.AppendLine("Unable to sign VSIX with requested '" + requestedAlgorithm + "' algorithm.");
+                        }
+                        return false;
+                }
 
                 var partsToSign = new List<Uri>();
                 foreach (var packagePart in package.GetParts())
@@ -142,6 +165,10 @@ namespace CodeTitans.Signature
                         errorBuffer.AppendLine("Signing could not be completed: " + ex.Message);
                     }
                     return false;
+                }
+                finally
+                {
+                    signatureManager.HashAlgorithm = PackageDigitalSignatureManager.DefaultHashAlgorithm;
                 }
 
                 if (ValidateSignatures(package))
