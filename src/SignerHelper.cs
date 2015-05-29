@@ -41,14 +41,20 @@ namespace CodeTitans.Signature
             var extension = Path.GetExtension(binaryPath);
             var outputBuffer = new StringBuilder();
             var errorBuffer = new StringBuilder();
-            bool result;
+            bool result = false;
 
             // is it a VSIX package?
             if (string.Compare(extension, ".vsix", StringComparison.OrdinalIgnoreCase) == 0)
             {
-                result = signContentInVsix
-                    ? SignVsixContent(binaryPath, arguments, outputBuffer, errorBuffer)
-                    : SignVsix(binaryPath, arguments, outputBuffer, errorBuffer);
+                if (signContentInVsix)
+                {
+                    result = SignVsixContent(binaryPath, arguments, outputBuffer, errorBuffer);
+                }
+
+                if (!signContentInVsix || result)
+                {
+                    result = SignVsix(binaryPath, arguments, outputBuffer, errorBuffer);
+                }
             }
             else
             {
