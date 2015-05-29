@@ -24,20 +24,6 @@ namespace CodeTitans.Signature
             if (arguments == null)
                 throw new ArgumentNullException("arguments");
 
-            // try to load the certificate:
-            try
-            {
-                arguments.VerifyCertificate();
-            }
-            catch (Exception ex)
-            {
-                if (finishAction != null)
-                {
-                    finishAction(new SignCompletionEventArgs(false, "Certificate error.", ex.Message));
-                }
-                return;
-            }
-
             var extension = Path.GetExtension(binaryPath);
             var outputBuffer = new StringBuilder();
             var errorBuffer = new StringBuilder();
@@ -110,6 +96,21 @@ namespace CodeTitans.Signature
         {
             if (arguments == null)
                 throw new ArgumentNullException("arguments");
+
+            // try to load the certificate:
+            try
+            {
+                arguments.VerifyCertificate();
+            }
+            catch (Exception ex)
+            {
+                if (errorBuffer != null)
+                {
+                    errorBuffer.AppendLine("Certificate error.");
+                    errorBuffer.AppendLine(ex.Message);
+                }
+                return false;
+            }
 
             // many thanks to Jeff Wilcox for the idea and code
             // check for details: http://www.jeff.wilcox.name/2010/03/vsixcodesigning/
