@@ -55,6 +55,7 @@
     <Compile Include="CertificateHelper.cs" />
     <Compile Include="ComboBoxItem.cs" />
     <Compile Include="DialogHelper.cs" />
+    <Compile Include="NamedHashAlgorithm.cs" />
     <Compile Include="MainForm.cs">
       <SubType>Form</SubType>
     </Compile>

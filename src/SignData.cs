@@ -12,12 +12,12 @@ namespace CodeTitans.Signature
         private readonly string _certificatePath;
         private readonly string _certificatePassword;
         private readonly string _timestampServer;
-        private readonly string _hashAlgorithm;
+        private readonly NamedHashAlgorithm _hashAlgorithm;
 
         /// <summary>
         /// Init constructor.
         /// </summary>
-        public SignData(X509Certificate2 certificate, string certificatePath, string certificatePassword, string timestampServer, string hashAlgorithm)
+        public SignData(X509Certificate2 certificate, string certificatePath, string certificatePassword, string timestampServer, NamedHashAlgorithm hashAlgorithm)
         {
             if (certificate == null && string.IsNullOrEmpty(certificatePath))
                 throw new ArgumentException("certificate");
@@ -74,7 +74,7 @@ namespace CodeTitans.Signature
             get { return _timestampServer; }
         }
 
-        public string HashAlgorithm
+        public NamedHashAlgorithm HashAlgorithm
         {
             get { return _hashAlgorithm; }
         }

@@ -132,29 +132,17 @@ namespace CodeTitans.Signature
                 signatureManager.CertificateOption = CertificateEmbeddingOption.InSignaturePart;
 
                 // select respective hashing algorithm (http://www.w3.org/TR/2001/WD-xmlenc-core-20010626/):
-                var requestedAlgorithm = string.IsNullOrEmpty(arguments.HashAlgorithm) ? null : arguments.HashAlgorithm.ToLower();
-                switch (requestedAlgorithm)
+                if (arguments.HashAlgorithm == null || string.IsNullOrEmpty(arguments.HashAlgorithm.Uri))
                 {
-                    case null:
-                        // use default
-                        break;
-                    case "sha1":
-                        signatureManager.HashAlgorithm = "http://www.w3.org/2000/09/xmldsig#sha1";
-                        break;
-                    case "sha256":
-                        signatureManager.HashAlgorithm = "http://www.w3.org/2001/04/xmlenc#sha256";
-                        break;
-                    case "sha512":
-                        signatureManager.HashAlgorithm = "http://www.w3.org/2001/04/xmlenc#sha512";
-                        break;
-                    default:
-                        // fail gracefully:
-                        if (errorBuffer != null)
-                        {
-                            errorBuffer.AppendLine("Unable to sign VSIX with requested '" + requestedAlgorithm + "' algorithm.");
-                        }
-                        return false;
+                    // fail gracefully:
+                    if (errorBuffer != null)
+                    {
+                        errorBuffer.AppendLine("Unable to sign VSIX with requested '" + (arguments.HashAlgorithm != null ? arguments.HashAlgorithm.Name : "<unknown>") + "' algorithm.");
+                    }
+                    return false;
                 }
+
+                signatureManager.HashAlgorithm = arguments.HashAlgorithm.Uri;
 
                 var partsToSign = new List<Uri>();
                 foreach (var packagePart in package.GetParts())

@@ -114,7 +114,7 @@ namespace CodeTitans.Signature
             cmbHashAlgorithms.Items.Clear();
             foreach (var item in CertificateHelper.LoadHashAlgorithms())
             {
-                cmbHashAlgorithms.Items.Add(new ComboBoxItem(item, item));
+                cmbHashAlgorithms.Items.Add(new ComboBoxItem(item, item.Name));
             }
             cmbHashAlgorithms.SelectedIndex = 0;
         }
@@ -207,8 +207,8 @@ namespace CodeTitans.Signature
                 return;
             }
 
-            var timestampServer = cmbTimestampServers.SelectedItem != null ? ((ComboBoxItem)cmbTimestampServers.SelectedItem).Data as string : null;
-            string hashAlgorithm = cmbHashAlgorithms.SelectedItem != null ? ((ComboBoxItem)cmbHashAlgorithms.SelectedItem).Data as string : "SHA1";
+            var timestampServer = cmbTimestampServers.SelectedItem != null ? ((ComboBoxItem)cmbTimestampServers.SelectedItem).DataAs<string>() : null;
+            var hashAlgorithm = cmbHashAlgorithms.SelectedItem != null ? ((ComboBoxItem)cmbHashAlgorithms.SelectedItem).DataAs<NamedHashAlgorithm>() : null;
             var arguments = cmbCertificates.Enabled ? new SignData(certificate, null, null, timestampServer, hashAlgorithm)
                                                     : new SignData(null, txtCertificatePath.Text, txtCertificatePassword.Text, timestampServer, hashAlgorithm);
 
