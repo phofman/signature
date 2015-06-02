@@ -41,10 +41,7 @@ namespace CodeTitans.Signature
             {
                 "http://time.certum.pl",
                 "http://timestamp.verisign.com/scripts/timstamp.dll",
-                "http://timestamp.comodoca.com/authenticode",
-                "https://timestamp.geotrust.com/",
-                "http://ca.signfiles.com/TSAServer.aspx",
-                "http://mindprod.com/jgloss/timestamp.html"
+                "http://timestamp.comodoca.com/authenticode"
             };
         }
 
