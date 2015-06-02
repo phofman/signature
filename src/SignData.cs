@@ -9,6 +9,7 @@ namespace CodeTitans.Signature
     sealed class SignData
     {
         private X509Certificate2 _certificate;
+        private readonly NamedStore _certificateStore;
         private readonly string _certificatePath;
         private readonly string _certificatePassword;
         private readonly string _timestampServer;
@@ -17,12 +18,15 @@ namespace CodeTitans.Signature
         /// <summary>
         /// Init constructor.
         /// </summary>
-        public SignData(X509Certificate2 certificate, string certificatePath, string certificatePassword, string timestampServer, NamedHashAlgorithm hashAlgorithm)
+        public SignData(X509Certificate2 certificate, NamedStore certificateStore, string certificatePath, string certificatePassword, string timestampServer, NamedHashAlgorithm hashAlgorithm)
         {
             if (certificate == null && string.IsNullOrEmpty(certificatePath))
                 throw new ArgumentException("certificate");
+            if (certificate != null && certificateStore == null)
+                throw new ArgumentNullException("certificateStore");
 
             _certificate = certificate;
+            _certificateStore = certificateStore;
             _certificatePath = certificatePath;
             _certificatePassword = certificatePassword;
             _timestampServer = timestampServer;
@@ -77,6 +81,11 @@ namespace CodeTitans.Signature
         public NamedHashAlgorithm HashAlgorithm
         {
             get { return _hashAlgorithm; }
+        }
+
+        public NamedStore CertificateStore
+        {
+            get { return _certificateStore; }
         }
 
         #endregion

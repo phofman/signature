@@ -29,6 +29,7 @@
         private void InitializeComponent()
         {
             this.groupBox1 = new System.Windows.Forms.GroupBox();
+            this.cmbStores = new System.Windows.Forms.ComboBox();
             this.signContentInVsix = new System.Windows.Forms.CheckBox();
             this.cmbHashAlgorithms = new System.Windows.Forms.ComboBox();
             this.hashAlgorithmLabel = new System.Windows.Forms.Label();
@@ -64,7 +65,6 @@
             this.helpToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.aboutMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.bttOpenResult = new System.Windows.Forms.Button();
-            this.cmbStores = new System.Windows.Forms.ComboBox();
             this.groupBox1.SuspendLayout();
             this.mainMenu.SuspendLayout();
             this.SuspendLayout();
@@ -102,6 +102,16 @@
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "Properties";
             // 
+            // cmbStores
+            // 
+            this.cmbStores.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.cmbStores.FormattingEnabled = true;
+            this.cmbStores.Location = new System.Drawing.Point(243, 121);
+            this.cmbStores.Name = "cmbStores";
+            this.cmbStores.Size = new System.Drawing.Size(174, 21);
+            this.cmbStores.TabIndex = 8;
+            this.cmbStores.SelectedIndexChanged += new System.EventHandler(this.cmbStores_SelectedIndexChanged);
+            // 
             // signContentInVsix
             // 
             this.signContentInVsix.AutoSize = true;
@@ -111,9 +121,9 @@
             this.signContentInVsix.Enabled = false;
             this.signContentInVsix.Location = new System.Drawing.Point(81, 55);
             this.signContentInVsix.Name = "signContentInVsix";
-            this.signContentInVsix.Size = new System.Drawing.Size(348, 17);
+            this.signContentInVsix.Size = new System.Drawing.Size(340, 17);
             this.signContentInVsix.TabIndex = 3;
-            this.signContentInVsix.Text = "Sign VSIX Content (can trigger multiple certification access requests)";
+            this.signContentInVsix.Text = "Sign VSIX Content (can trigger multiple certificate access requests)";
             this.signContentInVsix.UseVisualStyleBackColor = true;
             // 
             // cmbHashAlgorithms
@@ -122,7 +132,7 @@
             this.cmbHashAlgorithms.FormattingEnabled = true;
             this.cmbHashAlgorithms.Location = new System.Drawing.Point(172, 276);
             this.cmbHashAlgorithms.Name = "cmbHashAlgorithms";
-            this.cmbHashAlgorithms.Size = new System.Drawing.Size(203, 21);
+            this.cmbHashAlgorithms.Size = new System.Drawing.Size(245, 21);
             this.cmbHashAlgorithms.TabIndex = 17;
             // 
             // hashAlgorithmLabel
@@ -208,7 +218,7 @@
             this.txtCertificatePassword.Location = new System.Drawing.Point(243, 224);
             this.txtCertificatePassword.Name = "txtCertificatePassword";
             this.txtCertificatePassword.PasswordChar = '*';
-            this.txtCertificatePassword.Size = new System.Drawing.Size(132, 20);
+            this.txtCertificatePassword.Size = new System.Drawing.Size(174, 20);
             this.txtCertificatePassword.TabIndex = 15;
             // 
             // txtCertificatePath
@@ -442,15 +452,6 @@
             this.bttOpenResult.UseVisualStyleBackColor = true;
             this.bttOpenResult.Visible = false;
             this.bttOpenResult.Click += new System.EventHandler(this.bttOpenResult_Click);
-            // 
-            // cmbStores
-            // 
-            this.cmbStores.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.cmbStores.FormattingEnabled = true;
-            this.cmbStores.Location = new System.Drawing.Point(243, 121);
-            this.cmbStores.Name = "cmbStores";
-            this.cmbStores.Size = new System.Drawing.Size(132, 21);
-            this.cmbStores.TabIndex = 8;
             // 
             // MainForm
             // 

@@ -22,6 +22,7 @@ namespace CodeTitans.Signature
 
             FillHashAlgorithms();
             FillTimestampServers();
+            FillCertificateStores();
 
             // allow file drops on that application:
             AllowDrop = true;
@@ -83,14 +84,20 @@ namespace CodeTitans.Signature
             Close();
         }
 
-        private void FillCertificates(string subjectName)
+        private void FillCertificates()
+        {
+            var store = cmbStores.SelectedItem != null ? ((ComboBoxItem)cmbStores.SelectedItem).DataAs<NamedStore>() : null;
+            FillCertificates(store, txtCertificateFilter.Text);
+        }
+
+        private void FillCertificates(NamedStore store, string subjectName)
         {
             cmbCertificates.Items.Clear();
 
             IEnumerable<X509Certificate2> certificates = null;
             try
             {
-                certificates = CertificateHelper.LoadUserCertificates(subjectName);
+                certificates = CertificateHelper.LoadUserCertificates(store, subjectName);
             }
             catch (Exception ex)
             {
@@ -129,9 +136,24 @@ namespace CodeTitans.Signature
             cmbTimestampServers.SelectedIndex = 0;
         }
 
+        private void FillCertificateStores()
+        {
+            cmbStores.Items.Clear();
+            foreach (var store in CertificateHelper.LoadNamedCertificateScores())
+            {
+                cmbStores.Items.Add(new ComboBoxItem(store, store.ToString()));
+            }
+            cmbStores.SelectedIndex = 0;
+        }
+
         private void OnCertificateFilterChanged(object sender, EventArgs e)
         {
-            FillCertificates(txtCertificateFilter.Text);
+            FillCertificates();
+        }
+
+        private void cmbStores_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            FillCertificates();
         }
 
         private void OnCertificateCheckedChanged(object sender, EventArgs e)
@@ -209,8 +231,9 @@ namespace CodeTitans.Signature
 
             var timestampServer = cmbTimestampServers.SelectedItem != null ? ((ComboBoxItem)cmbTimestampServers.SelectedItem).DataAs<string>() : null;
             var hashAlgorithm = cmbHashAlgorithms.SelectedItem != null ? ((ComboBoxItem)cmbHashAlgorithms.SelectedItem).DataAs<NamedHashAlgorithm>() : null;
-            var arguments = cmbCertificates.Enabled ? new SignData(certificate, null, null, timestampServer, hashAlgorithm)
-                                                    : new SignData(null, txtCertificatePath.Text, txtCertificatePassword.Text, timestampServer, hashAlgorithm);
+            var store = cmbStores.SelectedItem != null ? ((ComboBoxItem) cmbStores.SelectedItem).DataAs<NamedStore>() : null;
+            var arguments = cmbCertificates.Enabled ? new SignData(certificate, store, null, null, timestampServer, hashAlgorithm)
+                                                    : new SignData(null, null, txtCertificatePath.Text, txtCertificatePassword.Text, timestampServer, hashAlgorithm);
 
             SignerHelper.Sign(txtBinaryPath.Text, arguments, signContentInVsix.Checked, OnFinished);
             ShowOpenResult = true;
