@@ -37,9 +37,12 @@ namespace CodeTitans.Signature
         /// </summary>
         public static IEnumerable<string> LoadTimestampServers()
         {
-            return new[] { "http://time.certum.pl", "http://timestamp.verisign.com/scripts/timstamp.dll", "http://timestamp.comodoca.com/authenticode" };
+            return new[] { "http://time.certum.pl", "http://timestamp.verisign.com/scripts/timstamp.dll", "http://timestamp.comodoca.com/authenticode", "https://timestamp.geotrust.com/", "http://ca.signfiles.com/TSAServer.aspx", "http://mindprod.com/jgloss/timestamp.html" };
         }
 
+        /// <summary>
+        /// Gets the list of names for available hash algorithms.
+        /// </summary>
         public static IEnumerable<string> LoadHashAlgorithms()
         {
             return new[] { "SHA1", "SHA256", "SHA512" };
