@@ -14,7 +14,7 @@ For open-source projects you can get a free 1-year valid code-signing certificat
 # Usage
 Picture worth more than a thousand words.
 
-![Screenshot](https://raw.github.com/phofman/signature/master/res/v1.1/screenshot.png)
+![Screenshot](https://raw.github.com/phofman/signature/master/res/v1.3/screenshot.png)
 
 1. name the binary to sign (Ctrl+O)
 2. select certificate (by using filter to find the installed one or by specifying path to .pfx file and password)
