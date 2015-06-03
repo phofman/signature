@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.IO.Compression;
 using System.IO.Packaging;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
+using System.Xml;
 
 namespace CodeTitans.Signature
 {
@@ -62,28 +64,32 @@ namespace CodeTitans.Signature
             }
         }
 
-        private static bool SignVsixContent(string binaryPath, SignData arguments, StringBuilder outputBuffer, StringBuilder errorBuffer)
+        private static bool SignVsixContent(string packagePath, SignData arguments, StringBuilder outputBuffer, StringBuilder errorBuffer)
         {
             bool success = true;
 
             // Step 1: rename vsix to zip
-            string zipPackagePath = Path.ChangeExtension(binaryPath, ".zip");
+            string zipPackagePath = Path.ChangeExtension(packagePath, ".zip");
             if (File.Exists(zipPackagePath))
             {
                 File.Delete(zipPackagePath);
             }
-            File.Move(binaryPath, zipPackagePath);
+            File.Move(packagePath, zipPackagePath);
 
             // Step 2: extract files and delete the zip file
-            string fileDir = Path.GetDirectoryName(binaryPath);
-            string fileName = Path.GetFileNameWithoutExtension(binaryPath);
+            string fileDir = Path.GetDirectoryName(packagePath);
+            string fileName = Path.GetFileNameWithoutExtension(packagePath);
             string unZippedDir = Path.Combine(fileDir, fileName);
+            if (Directory.Exists(unZippedDir))
+            {
+                Directory.Delete(unZippedDir, true);
+            }
             ZipFile.ExtractToDirectory(zipPackagePath, unZippedDir);
             File.Delete(zipPackagePath);
 
             // Step 3: sign all extracted files
-            var filesToSign = Directory.GetFiles(unZippedDir, "*.dll").
-                                Concat(Directory.GetFiles(unZippedDir, "*.exe")).
+            var filesToSign = Directory.GetFiles(unZippedDir, "*.dll", SearchOption.AllDirectories).
+                                Concat(Directory.GetFiles(unZippedDir, "*.exe", SearchOption.AllDirectories)).
                                 Where(f => !VerifyBinaryDigitalSignature(f)).ToArray();
             foreach (var file in filesToSign)
             {
@@ -94,14 +100,101 @@ namespace CodeTitans.Signature
                 }
             }
 
-            // Step 4: Zip the extracted files
-            ZipFile.CreateFromDirectory(unZippedDir, zipPackagePath, CompressionLevel.Optimal, false);
-            Directory.Delete(unZippedDir, true);
+            // Step 4: Read info about MIME types and delete the metadata
+            var contentTypesPath = Path.Combine(unZippedDir, "[Content_Types].xml");
+            var registeredExtensions = ReadContentTypesXml(contentTypesPath);
+            File.Delete(contentTypesPath);
 
-            // Step 5: Rename zip file to vsix
+            // Step 5: Create the VSIX package again
+            Package finalPackage = null;
+            try
+            {
+                finalPackage = Package.Open(zipPackagePath, FileMode.Create);
+                var allFiles = Directory.GetFiles(unZippedDir, "*", SearchOption.AllDirectories);
+
+                foreach (var file in allFiles)
+                {
+                    var uri = PackUriHelper.CreatePartUri(new Uri(file.Substring(unZippedDir.Length + 1), UriKind.Relative));
+                    var part = finalPackage.CreatePart(uri, GetMimeType(registeredExtensions, uri.OriginalString), CompressionOption.Maximum);
+
+                    if (part != null)
+                    {
+                        using (var sourceStream = File.OpenRead(file))
+                        {
+                            using (var outputStream = part.GetStream(FileMode.Create))
+                            {
+                                //sourceStream.CopyTo(outputStream);
+                                CopyStream(sourceStream, outputStream);
+                            }
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                if (errorBuffer != null)
+                    errorBuffer.AppendLine(ex.Message).AppendLine(ex.StackTrace);
+
+                success = false;
+            }
+            finally
+            {
+                if (finalPackage != null)
+                    finalPackage.Close();
+            }
+
+            // Step 6: Rename zip file to vsix
             string vsixPackagePath = Path.ChangeExtension(zipPackagePath, ".vsix");
             File.Move(zipPackagePath, vsixPackagePath);
             return success;
+        }
+
+        private static void CopyStream(Stream source, Stream output)
+        {
+            byte[] buffer = new byte[16 * 1024];
+            int bytesRead;
+
+            while ((bytesRead = source.Read(buffer, 0, buffer.Length)) > 0)
+            {
+                output.Write(buffer, 0, bytesRead);
+            }
+        }
+
+        private static string GetMimeType(Dictionary<string, string> registeredExtensions, string path)
+        {
+            // INFO: all extensions or parts belong to this dictionary as we rewrite exactly the same package as original one
+            // we could be in trouble if adding new type of files into it...
+            var ext = Path.GetExtension(path);
+            return string.IsNullOrEmpty(ext) ? registeredExtensions[path] : registeredExtensions[ext];
+        }
+
+        private static Dictionary<string, string> ReadContentTypesXml(string path)
+        {
+            var result = new Dictionary<string, string>();
+
+            if (File.Exists(path))
+            {
+                XmlDocument doc = new XmlDocument();
+                doc.Load(path);
+
+                // get extensions descriptions:
+                foreach (XmlElement node in doc.GetElementsByTagName("Default"))
+                {
+                    var ext = "." + node.GetAttribute("Extension");
+                    var type = node.GetAttribute("ContentType");
+                    result[ext] = type;
+                }
+
+                // get unrecognized paths descriptions:
+                foreach (XmlElement node in doc.GetElementsByTagName("Override"))
+                {
+                    var part = node.GetAttribute("PartName");
+                    var type = node.GetAttribute("ContentType");
+                    result[part] = type;
+                }
+            }
+
+            return result;
         }
 
         private static bool SignVsix(string vsixPackagePath, SignData arguments, StringBuilder outputBuffer, StringBuilder errorBuffer)
