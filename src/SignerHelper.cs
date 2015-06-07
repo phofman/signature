@@ -74,7 +74,7 @@ namespace CodeTitans.Signature
                     }
                 }
 
-                SignVsix(binaryPath, certificate, hashAlgorithm, finishAction);
+                SignVsix(binaryPath, certificate, hashAlgorithm, finishAction, thumbPrint, certificatePath, certificatePassword, timestampServer);
                 return;
             }
 
@@ -128,7 +128,7 @@ namespace CodeTitans.Signature
             }
 
             // Step 4: Zip the extracted files
-            ZipFile.CreateFromDirectory(unZippedDir, zipPackagePath, CompressionLevel.NoCompression, false);
+            ZipFile.CreateFromDirectory(unZippedDir, zipPackagePath);
             Directory.Delete(unZippedDir, true);
 
             // Step 5: Rename zip file to vsix
@@ -136,7 +136,10 @@ namespace CodeTitans.Signature
             return success;
         }
 
-        private static void SignVsix(string vsixPackagePath, X509Certificate2 certificate, string hashAlgorithm, Action<SignEventArgs> finishAction)
+        private static void SignVsix(string vsixPackagePath, X509Certificate2 certificate, string hashAlgorithm, Action<SignEventArgs> finishAction, string thumbPrint,
+                                            string certificatePath,
+                                            string certificatePassword,
+                                            string timestampServer)
         {
             // many thanks to Jeff Wilcox for the idea and code
             // check for details: http://www.jeff.wilcox.name/2010/03/vsixcodesigning/
@@ -146,10 +149,30 @@ namespace CodeTitans.Signature
                 signatureManager.CertificateOption = CertificateEmbeddingOption.InSignaturePart;
 
                 // TODO: support signing VSIX with digest algorithm set to SHA256 
-
                 var partsToSign = new List<Uri>();
                 foreach (var packagePart in package.GetParts())
-                {
+                {                    
+                    var name = Path.Combine(Path.GetTempPath(), Path.GetFileName(packagePart.Uri.OriginalString));
+                    var extension = Path.GetExtension(name);
+                    using (var stream = packagePart.GetStream(FileMode.Open, FileAccess.Read))
+                    {                        
+                        using (var fileStream = new FileStream(name, FileMode.OpenOrCreate))
+                        {
+                            stream.CopyTo(fileStream);                            
+                        }                       
+                    }
+                    if ((extension.Equals(".dll") || extension.Equals(".exe")) && !VerifyBinaryDigitalSignature(name))
+                    {
+                        SignBinary(name, thumbPrint, certificatePath, certificatePassword, timestampServer, hashAlgorithm);
+                        using (var stream = packagePart.GetStream(FileMode.Open, FileAccess.Write))
+                        {
+                            using (var fileStream = new FileStream(name, FileMode.Open))
+                            {
+                                fileStream.CopyTo(stream);
+                            }
+                        }
+                    }
+                   
                     partsToSign.Add(packagePart.Uri);
                 }
 
@@ -182,11 +205,11 @@ namespace CodeTitans.Signature
             }
         }
 
-        private static bool SignBinary(string path, 
-                                       string thumbPrint, 
-                                       string certPath, 
-                                       string certPassword, 
-                                       string timestampServer, 
+        private static bool SignBinary(string path,
+                                       string thumbPrint,
+                                       string certPath,
+                                       string certPassword,
+                                       string timestampServer,
                                        string hashAlgorithm)
         {
             string command;
@@ -216,11 +239,11 @@ namespace CodeTitans.Signature
             {
                 _output.AppendLine(output);
             }
-            
+
             if (!String.IsNullOrEmpty(error))
             {
                 _error.AppendLine(error);
-            }            
+            }
             return exitCode == 0;
         }
 
@@ -285,10 +308,10 @@ namespace CodeTitans.Signature
                     proc.Close();
                 }
             }
-            
+
             return exitCode;
         }
-        
+
         private static string Signtool
         {
             get
