@@ -29,6 +29,10 @@
         private void InitializeComponent()
         {
             this.groupBox1 = new System.Windows.Forms.GroupBox();
+            this.cmbStores = new System.Windows.Forms.ComboBox();
+            this.signContentInVsix = new System.Windows.Forms.CheckBox();
+            this.cmbHashAlgorithms = new System.Windows.Forms.ComboBox();
+            this.hashAlgorithmLabel = new System.Windows.Forms.Label();
             this.txtLog = new System.Windows.Forms.TextBox();
             this.label6 = new System.Windows.Forms.Label();
             this.txtCertificateFilter = new System.Windows.Forms.TextBox();
@@ -61,9 +65,6 @@
             this.helpToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.aboutMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.bttOpenResult = new System.Windows.Forms.Button();
-            this.signContentInVsix = new System.Windows.Forms.CheckBox();
-            this.hashAlgorithmComboBox = new System.Windows.Forms.ComboBox();
-            this.hashAlgorithmLabel = new System.Windows.Forms.Label();
             this.groupBox1.SuspendLayout();
             this.mainMenu.SuspendLayout();
             this.SuspendLayout();
@@ -73,7 +74,9 @@
             this.groupBox1.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.groupBox1.Controls.Add(this.hashAlgorithmComboBox);
+            this.groupBox1.Controls.Add(this.cmbStores);
+            this.groupBox1.Controls.Add(this.signContentInVsix);
+            this.groupBox1.Controls.Add(this.cmbHashAlgorithms);
             this.groupBox1.Controls.Add(this.hashAlgorithmLabel);
             this.groupBox1.Controls.Add(this.txtLog);
             this.groupBox1.Controls.Add(this.label6);
@@ -94,28 +97,70 @@
             this.groupBox1.Controls.Add(this.label1);
             this.groupBox1.Location = new System.Drawing.Point(12, 27);
             this.groupBox1.Name = "groupBox1";
-            this.groupBox1.Size = new System.Drawing.Size(859, 482);
+            this.groupBox1.Size = new System.Drawing.Size(859, 453);
             this.groupBox1.TabIndex = 0;
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "Properties";
+            // 
+            // cmbStores
+            // 
+            this.cmbStores.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.cmbStores.FormattingEnabled = true;
+            this.cmbStores.Location = new System.Drawing.Point(243, 121);
+            this.cmbStores.Name = "cmbStores";
+            this.cmbStores.Size = new System.Drawing.Size(174, 21);
+            this.cmbStores.TabIndex = 8;
+            this.cmbStores.SelectedIndexChanged += new System.EventHandler(this.cmbStores_SelectedIndexChanged);
+            // 
+            // signContentInVsix
+            // 
+            this.signContentInVsix.AutoSize = true;
+            this.signContentInVsix.CheckAlign = System.Drawing.ContentAlignment.TopLeft;
+            this.signContentInVsix.Checked = true;
+            this.signContentInVsix.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.signContentInVsix.Enabled = false;
+            this.signContentInVsix.Location = new System.Drawing.Point(81, 55);
+            this.signContentInVsix.Name = "signContentInVsix";
+            this.signContentInVsix.Size = new System.Drawing.Size(340, 17);
+            this.signContentInVsix.TabIndex = 3;
+            this.signContentInVsix.Text = "Sign VSIX Content (can trigger multiple certificate access requests)";
+            this.signContentInVsix.UseVisualStyleBackColor = true;
+            // 
+            // cmbHashAlgorithms
+            // 
+            this.cmbHashAlgorithms.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.cmbHashAlgorithms.FormattingEnabled = true;
+            this.cmbHashAlgorithms.Location = new System.Drawing.Point(172, 276);
+            this.cmbHashAlgorithms.Name = "cmbHashAlgorithms";
+            this.cmbHashAlgorithms.Size = new System.Drawing.Size(245, 21);
+            this.cmbHashAlgorithms.TabIndex = 17;
+            // 
+            // hashAlgorithmLabel
+            // 
+            this.hashAlgorithmLabel.AutoSize = true;
+            this.hashAlgorithmLabel.Location = new System.Drawing.Point(17, 276);
+            this.hashAlgorithmLabel.Name = "hashAlgorithmLabel";
+            this.hashAlgorithmLabel.Size = new System.Drawing.Size(81, 13);
+            this.hashAlgorithmLabel.TabIndex = 16;
+            this.hashAlgorithmLabel.Text = "Hash Algorithm:";
             // 
             // txtLog
             // 
             this.txtLog.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.txtLog.Location = new System.Drawing.Point(20, 302);
+            this.txtLog.Location = new System.Drawing.Point(20, 330);
             this.txtLog.Multiline = true;
             this.txtLog.Name = "txtLog";
             this.txtLog.ReadOnly = true;
             this.txtLog.ScrollBars = System.Windows.Forms.ScrollBars.Both;
-            this.txtLog.Size = new System.Drawing.Size(824, 161);
-            this.txtLog.TabIndex = 16;
+            this.txtLog.Size = new System.Drawing.Size(824, 104);
+            this.txtLog.TabIndex = 20;
             // 
             // label6
             // 
             this.label6.AutoSize = true;
-            this.label6.Location = new System.Drawing.Point(169, 72);
+            this.label6.Location = new System.Drawing.Point(169, 100);
             this.label6.Name = "label6";
             this.label6.Size = new System.Drawing.Size(68, 13);
             this.label6.TabIndex = 6;
@@ -125,7 +170,7 @@
             // 
             this.txtCertificateFilter.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.txtCertificateFilter.Location = new System.Drawing.Point(243, 67);
+            this.txtCertificateFilter.Location = new System.Drawing.Point(243, 95);
             this.txtCertificateFilter.Name = "txtCertificateFilter";
             this.txtCertificateFilter.Size = new System.Drawing.Size(551, 20);
             this.txtCertificateFilter.TabIndex = 7;
@@ -136,63 +181,62 @@
             this.cmbTimestampServers.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.cmbTimestampServers.FormattingEnabled = true;
-            this.cmbTimestampServers.Location = new System.Drawing.Point(172, 262);
+            this.cmbTimestampServers.Location = new System.Drawing.Point(172, 303);
             this.cmbTimestampServers.Name = "cmbTimestampServers";
             this.cmbTimestampServers.Size = new System.Drawing.Size(622, 21);
-            this.cmbTimestampServers.TabIndex = 15;
-            this.cmbTimestampServers.SelectedIndexChanged += new System.EventHandler(this.cmbTimestampServers_SelectedIndexChanged);
+            this.cmbTimestampServers.TabIndex = 19;
             // 
             // label5
             // 
             this.label5.AutoSize = true;
-            this.label5.Location = new System.Drawing.Point(17, 262);
+            this.label5.Location = new System.Drawing.Point(17, 306);
             this.label5.Name = "label5";
             this.label5.Size = new System.Drawing.Size(93, 13);
-            this.label5.TabIndex = 14;
+            this.label5.TabIndex = 18;
             this.label5.Text = "Timestamp server:";
             // 
             // label4
             // 
             this.label4.AutoSize = true;
-            this.label4.Location = new System.Drawing.Point(169, 172);
+            this.label4.Location = new System.Drawing.Point(169, 227);
             this.label4.Name = "label4";
             this.label4.Size = new System.Drawing.Size(56, 13);
-            this.label4.TabIndex = 12;
+            this.label4.TabIndex = 14;
             this.label4.Text = "Password:";
             // 
             // label3
             // 
             this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(169, 146);
+            this.label3.Location = new System.Drawing.Point(169, 201);
             this.label3.Name = "label3";
             this.label3.Size = new System.Drawing.Size(26, 13);
-            this.label3.TabIndex = 9;
+            this.label3.TabIndex = 11;
             this.label3.Text = "File:";
             // 
             // txtCertificatePassword
             // 
-            this.txtCertificatePassword.Location = new System.Drawing.Point(243, 169);
+            this.txtCertificatePassword.Location = new System.Drawing.Point(243, 224);
             this.txtCertificatePassword.Name = "txtCertificatePassword";
             this.txtCertificatePassword.PasswordChar = '*';
-            this.txtCertificatePassword.Size = new System.Drawing.Size(132, 20);
-            this.txtCertificatePassword.TabIndex = 13;
+            this.txtCertificatePassword.Size = new System.Drawing.Size(174, 20);
+            this.txtCertificatePassword.TabIndex = 15;
             // 
             // txtCertificatePath
             // 
             this.txtCertificatePath.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.txtCertificatePath.Location = new System.Drawing.Point(243, 143);
+            this.txtCertificatePath.Location = new System.Drawing.Point(243, 198);
             this.txtCertificatePath.Name = "txtCertificatePath";
             this.txtCertificatePath.Size = new System.Drawing.Size(551, 20);
-            this.txtCertificatePath.TabIndex = 10;
+            this.txtCertificatePath.TabIndex = 12;
             // 
             // radioPfx
             // 
             this.radioPfx.AutoSize = true;
-            this.radioPfx.Location = new System.Drawing.Point(81, 144);
+            this.radioPfx.Location = new System.Drawing.Point(81, 199);
             this.radioPfx.Name = "radioPfx";
             this.radioPfx.Size = new System.Drawing.Size(68, 17);
-            this.radioPfx.TabIndex = 5;
+            this.radioPfx.TabIndex = 10;
             this.radioPfx.TabStop = true;
             this.radioPfx.Text = "from PFX";
             this.radioPfx.UseVisualStyleBackColor = true;
@@ -201,10 +245,10 @@
             // radioInstalled
             // 
             this.radioInstalled.AutoSize = true;
-            this.radioInstalled.Location = new System.Drawing.Point(81, 70);
+            this.radioInstalled.Location = new System.Drawing.Point(81, 98);
             this.radioInstalled.Name = "radioInstalled";
             this.radioInstalled.Size = new System.Drawing.Size(63, 17);
-            this.radioInstalled.TabIndex = 4;
+            this.radioInstalled.TabIndex = 5;
             this.radioInstalled.TabStop = true;
             this.radioInstalled.Text = "installed";
             this.radioInstalled.UseVisualStyleBackColor = true;
@@ -216,27 +260,27 @@
             | System.Windows.Forms.AnchorStyles.Right)));
             this.cmbCertificates.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.cmbCertificates.FormattingEnabled = true;
-            this.cmbCertificates.Location = new System.Drawing.Point(243, 93);
+            this.cmbCertificates.Location = new System.Drawing.Point(243, 148);
             this.cmbCertificates.Name = "cmbCertificates";
             this.cmbCertificates.Size = new System.Drawing.Size(551, 21);
-            this.cmbCertificates.TabIndex = 8;
+            this.cmbCertificates.TabIndex = 9;
             // 
             // label2
             // 
             this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(17, 72);
+            this.label2.Location = new System.Drawing.Point(17, 100);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(57, 13);
-            this.label2.TabIndex = 3;
+            this.label2.TabIndex = 4;
             this.label2.Text = "Certificate:";
             // 
             // btnCertificateLocation
             // 
             this.btnCertificateLocation.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnCertificateLocation.Location = new System.Drawing.Point(800, 141);
+            this.btnCertificateLocation.Location = new System.Drawing.Point(800, 196);
             this.btnCertificateLocation.Name = "btnCertificateLocation";
             this.btnCertificateLocation.Size = new System.Drawing.Size(44, 23);
-            this.btnCertificateLocation.TabIndex = 11;
+            this.btnCertificateLocation.TabIndex = 13;
             this.btnCertificateLocation.Text = "...";
             this.btnCertificateLocation.UseVisualStyleBackColor = true;
             this.btnCertificateLocation.Click += new System.EventHandler(this.btnCertificateLocation_Click);
@@ -275,7 +319,7 @@
             // 
             this.btnClose.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.btnClose.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-            this.btnClose.Location = new System.Drawing.Point(796, 515);
+            this.btnClose.Location = new System.Drawing.Point(796, 486);
             this.btnClose.Name = "btnClose";
             this.btnClose.Size = new System.Drawing.Size(75, 23);
             this.btnClose.TabIndex = 3;
@@ -286,7 +330,7 @@
             // btnSign
             // 
             this.btnSign.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnSign.Location = new System.Drawing.Point(660, 515);
+            this.btnSign.Location = new System.Drawing.Point(660, 486);
             this.btnSign.Name = "btnSign";
             this.btnSign.Size = new System.Drawing.Size(130, 23);
             this.btnSign.TabIndex = 2;
@@ -298,7 +342,7 @@
             // 
             this.homeLink.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.homeLink.AutoSize = true;
-            this.homeLink.Location = new System.Drawing.Point(12, 520);
+            this.homeLink.Location = new System.Drawing.Point(12, 491);
             this.homeLink.Name = "homeLink";
             this.homeLink.Size = new System.Drawing.Size(94, 13);
             this.homeLink.TabIndex = 1;
@@ -314,7 +358,7 @@
             this.mainMenu.Location = new System.Drawing.Point(0, 0);
             this.mainMenu.Name = "mainMenu";
             this.mainMenu.Size = new System.Drawing.Size(883, 24);
-            this.mainMenu.TabIndex = 4;
+            this.mainMenu.TabIndex = 5;
             this.mainMenu.Text = "menuStrip1";
             // 
             // fileToolStripMenuItem
@@ -399,50 +443,15 @@
             // 
             // bttOpenResult
             // 
-            this.bttOpenResult.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.bttOpenResult.Location = new System.Drawing.Point(524, 515);
+            this.bttOpenResult.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this.bttOpenResult.Location = new System.Drawing.Point(524, 486);
             this.bttOpenResult.Name = "bttOpenResult";
             this.bttOpenResult.Size = new System.Drawing.Size(130, 23);
-            this.bttOpenResult.TabIndex = 5;
+            this.bttOpenResult.TabIndex = 4;
             this.bttOpenResult.Text = "Open result...";
             this.bttOpenResult.UseVisualStyleBackColor = true;
             this.bttOpenResult.Visible = false;
             this.bttOpenResult.Click += new System.EventHandler(this.bttOpenResult_Click);
-            // 
-            // signContentInVsix
-            // 
-            this.signContentInVsix.AutoSize = true;
-            this.signContentInVsix.CheckAlign = System.Drawing.ContentAlignment.TopLeft;
-            this.signContentInVsix.Checked = true;
-            this.signContentInVsix.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.signContentInVsix.Enabled = false;
-            this.signContentInVsix.Location = new System.Drawing.Point(395, 518);
-            this.signContentInVsix.Name = "signContentInVsix";
-            this.signContentInVsix.Size = new System.Drawing.Size(121, 17);
-            this.signContentInVsix.TabIndex = 6;
-            this.signContentInVsix.Text = "Sign Content In Vsix";
-            this.signContentInVsix.UseVisualStyleBackColor = true;
-            this.signContentInVsix.CheckedChanged += new System.EventHandler(this.signContentInVsix_CheckedChanged);
-            // 
-            // hashAlgorithmComboBox
-            // 
-            this.hashAlgorithmComboBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.hashAlgorithmComboBox.FormattingEnabled = true;
-            this.hashAlgorithmComboBox.Location = new System.Drawing.Point(172, 221);
-            this.hashAlgorithmComboBox.Name = "hashAlgorithmComboBox";
-            this.hashAlgorithmComboBox.Size = new System.Drawing.Size(622, 21);
-            this.hashAlgorithmComboBox.TabIndex = 18;
-            // 
-            // hashAlgorithmLabel
-            // 
-            this.hashAlgorithmLabel.AutoSize = true;
-            this.hashAlgorithmLabel.Location = new System.Drawing.Point(17, 221);
-            this.hashAlgorithmLabel.Name = "hashAlgorithmLabel";
-            this.hashAlgorithmLabel.Size = new System.Drawing.Size(81, 13);
-            this.hashAlgorithmLabel.TabIndex = 17;
-            this.hashAlgorithmLabel.Text = "Hash Algorithm:";
             // 
             // MainForm
             // 
@@ -450,8 +459,7 @@
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.CancelButton = this.btnClose;
-            this.ClientSize = new System.Drawing.Size(883, 550);
-            this.Controls.Add(this.signContentInVsix);
+            this.ClientSize = new System.Drawing.Size(883, 521);
             this.Controls.Add(this.bttOpenResult);
             this.Controls.Add(this.homeLink);
             this.Controls.Add(this.btnSign);
@@ -461,7 +469,7 @@
             this.MainMenuStrip = this.mainMenu;
             this.MaximizeBox = false;
             this.MinimizeBox = false;
-            this.MinimumSize = new System.Drawing.Size(480, 420);
+            this.MinimumSize = new System.Drawing.Size(480, 480);
             this.Name = "MainForm";
             this.ShowIcon = false;
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
@@ -511,8 +519,9 @@
         private System.Windows.Forms.ToolStripMenuItem openResultFolderMenuItem;
         private System.Windows.Forms.Button bttOpenResult;
         private System.Windows.Forms.CheckBox signContentInVsix;
-        private System.Windows.Forms.ComboBox hashAlgorithmComboBox;
+        private System.Windows.Forms.ComboBox cmbHashAlgorithms;
         private System.Windows.Forms.Label hashAlgorithmLabel;
+        private System.Windows.Forms.ComboBox cmbStores;
     }
 }
 

@@ -31,6 +31,14 @@ namespace CodeTitans.Signature
 
         #endregion
 
+        /// <summary>
+        /// Casts the data part as specified type.
+        /// </summary>
+        public T DataAs<T>()
+        {
+            return (T) Data;
+        }
+
         public override string ToString()
         {
             return _text;

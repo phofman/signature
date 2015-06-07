@@ -12,7 +12,6 @@ namespace CodeTitans.Signature
 
         private OpenFileDialog _openBinaryDialog;
         private OpenFileDialog _openCertDialog;
-        private bool _signContentInVsix = true;
 
         public MainForm()
         {
@@ -23,6 +22,7 @@ namespace CodeTitans.Signature
 
             FillHashAlgorithms();
             FillTimestampServers();
+            FillCertificateStores();
 
             // allow file drops on that application:
             AllowDrop = true;
@@ -84,14 +84,20 @@ namespace CodeTitans.Signature
             Close();
         }
 
-        private void FillCertificates(string subjectName)
+        private void FillCertificates()
+        {
+            var store = cmbStores.SelectedItem != null ? ((ComboBoxItem)cmbStores.SelectedItem).DataAs<NamedStore>() : null;
+            FillCertificates(store, txtCertificateFilter.Text);
+        }
+
+        private void FillCertificates(NamedStore store, string subjectName)
         {
             cmbCertificates.Items.Clear();
 
             IEnumerable<X509Certificate2> certificates = null;
             try
             {
-                certificates = CertificateHelper.LoadUserCertificates(subjectName);
+                certificates = CertificateHelper.LoadUserCertificates(store, subjectName);
             }
             catch (Exception ex)
             {
@@ -112,12 +118,12 @@ namespace CodeTitans.Signature
         
         private void FillHashAlgorithms()
         {
-            hashAlgorithmComboBox.Items.Clear();
+            cmbHashAlgorithms.Items.Clear();
             foreach (var item in CertificateHelper.LoadHashAlgorithms())
             {
-                hashAlgorithmComboBox.Items.Add(new ComboBoxItem(item, item));
+                cmbHashAlgorithms.Items.Add(new ComboBoxItem(item, item.Name));
             }
-            hashAlgorithmComboBox.SelectedIndex = 0;
+            cmbHashAlgorithms.SelectedIndex = 0;
         }
 
         private void FillTimestampServers()
@@ -130,9 +136,24 @@ namespace CodeTitans.Signature
             cmbTimestampServers.SelectedIndex = 0;
         }
 
+        private void FillCertificateStores()
+        {
+            cmbStores.Items.Clear();
+            foreach (var store in CertificateHelper.LoadNamedCertificateScores())
+            {
+                cmbStores.Items.Add(new ComboBoxItem(store, store.ToString()));
+            }
+            cmbStores.SelectedIndex = 0;
+        }
+
         private void OnCertificateFilterChanged(object sender, EventArgs e)
         {
-            FillCertificates(txtCertificateFilter.Text);
+            FillCertificates();
+        }
+
+        private void cmbStores_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            FillCertificates();
         }
 
         private void OnCertificateCheckedChanged(object sender, EventArgs e)
@@ -208,32 +229,28 @@ namespace CodeTitans.Signature
                 return;
             }
 
-            var timestampServer = cmbTimestampServers.SelectedItem != null ? ((ComboBoxItem)cmbTimestampServers.SelectedItem).Data as string : null;
-            string hashAlgorithm = hashAlgorithmComboBox.SelectedItem != null ? ((ComboBoxItem)hashAlgorithmComboBox.SelectedItem).Data as string : "SHA1";
-            if (cmbCertificates.Enabled)
-            {
-                SignerHelper.Sign(txtBinaryPath.Text, certificate, null, null, timestampServer, hashAlgorithm, _signContentInVsix, OnFinished);
-            }
-            else
-            {
-                SignerHelper.Sign(txtBinaryPath.Text, null, txtCertificatePath.Text, txtCertificatePassword.Text, timestampServer, hashAlgorithm, _signContentInVsix, OnFinished);
-            }
+            var timestampServer = cmbTimestampServers.SelectedItem != null ? ((ComboBoxItem)cmbTimestampServers.SelectedItem).DataAs<string>() : null;
+            var hashAlgorithm = cmbHashAlgorithms.SelectedItem != null ? ((ComboBoxItem)cmbHashAlgorithms.SelectedItem).DataAs<NamedHashAlgorithm>() : null;
+            var store = cmbStores.SelectedItem != null ? ((ComboBoxItem) cmbStores.SelectedItem).DataAs<NamedStore>() : null;
+            var arguments = cmbCertificates.Enabled ? new SignData(certificate, store, null, null, timestampServer, hashAlgorithm)
+                                                    : new SignData(null, null, txtCertificatePath.Text, txtCertificatePassword.Text, timestampServer, hashAlgorithm);
 
+            SignerHelper.Sign(txtBinaryPath.Text, arguments, signContentInVsix.Checked, OnFinished);
             ShowOpenResult = true;
         }
 
-        private void OnFinished(SignEventArgs e)
+        private void OnFinished(SignCompletionEventArgs e)
         {
+            txtLog.Text = string.Concat(e.Output, string.IsNullOrEmpty(e.Output) ? string.Empty : Environment.NewLine, e.Error);
+
             if (e.Success)
             {
-                MessageBox.Show("Signing successfully completed.");
+                MessageBox.Show("Signing successfully completed.", AppTitle, MessageBoxButtons.OK, MessageBoxIcon.None);
             }
             else
             {
-                MessageBox.Show("Signing failed.");
+                MessageBox.Show("Signing failed.", AppTitle, MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
-
-            txtLog.Text = string.Concat(e.Output, string.IsNullOrEmpty(e.Output) ? string.Empty : Environment.NewLine, e.Error);
         }
 
         private void homeLink_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
@@ -252,26 +269,16 @@ namespace CodeTitans.Signature
             DialogHelper.StartExplorerForFile(txtBinaryPath.Text);
         }
 
-        private void signContentInVsix_CheckedChanged(object sender, EventArgs e)
-        {
-            _signContentInVsix = this.signContentInVsix.Checked;
-        }
-
         private void txtBinaryPath_TextChanged(object sender, EventArgs e)
         {
-            if (!string.IsNullOrEmpty(this.txtBinaryPath.Text) && this.txtBinaryPath.Text.TrimEnd().EndsWith(".vsix", StringComparison.OrdinalIgnoreCase))
+            if (!string.IsNullOrEmpty(txtBinaryPath.Text) && txtBinaryPath.Text.TrimEnd().EndsWith(".vsix", StringComparison.OrdinalIgnoreCase))
             {
-                this.signContentInVsix.Enabled = true;
+                signContentInVsix.Enabled = true;
             }
             else
             {
-                this.signContentInVsix.Enabled = false;
+                signContentInVsix.Enabled = false;
             }
-        }
-
-        private void cmbTimestampServers_SelectedIndexChanged(object sender, EventArgs e)
-        {
-
         }
     }
 }
