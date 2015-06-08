@@ -36,15 +36,7 @@ namespace CodeTitans.Signature
                 // is it a VSIX package?
                 if (string.Compare(extension, ".vsix", StringComparison.OrdinalIgnoreCase) == 0)
                 {
-                    if (signContentInVsix)
-                    {
-                        result = SignVsixContent(binaryPath, arguments, outputBuffer, errorBuffer);
-                    }
-
-                    if (!signContentInVsix || result)
-                    {
-                        result = SignVsix(binaryPath, arguments, outputBuffer, errorBuffer);
-                    }
+                    result = SignVsix(binaryPath, arguments, outputBuffer, errorBuffer, signContentInVsix);
                 }
                 else
                 {
@@ -64,140 +56,11 @@ namespace CodeTitans.Signature
             }
         }
 
-        private static bool SignVsixContent(string packagePath, SignData arguments, StringBuilder outputBuffer, StringBuilder errorBuffer)
-        {
-            bool success = true;
-
-            // Step 1: rename vsix to zip
-            string zipPackagePath = Path.ChangeExtension(packagePath, ".zip");
-            if (File.Exists(zipPackagePath))
-            {
-                File.Delete(zipPackagePath);
-            }
-            File.Move(packagePath, zipPackagePath);
-
-            // Step 2: extract files and delete the zip file
-            string fileDir = Path.GetDirectoryName(packagePath);
-            string fileName = Path.GetFileNameWithoutExtension(packagePath);
-            string unZippedDir = Path.Combine(fileDir, fileName);
-            if (Directory.Exists(unZippedDir))
-            {
-                Directory.Delete(unZippedDir, true);
-            }
-            ZipFile.ExtractToDirectory(zipPackagePath, unZippedDir);
-            File.Delete(zipPackagePath);
-
-            // Step 3: sign all extracted files
-            var filesToSign = Directory.GetFiles(unZippedDir, "*.dll", SearchOption.AllDirectories).
-                                Concat(Directory.GetFiles(unZippedDir, "*.exe", SearchOption.AllDirectories)).
-                                Where(f => !VerifyBinaryDigitalSignature(f)).ToArray();
-            foreach (var file in filesToSign)
-            {
-                success = SignBinary(file, arguments, outputBuffer, errorBuffer);
-                if (!success)
-                {
-                    break;
-                }
-            }
-
-            // Step 4: Read info about MIME types and delete the metadata
-            var contentTypesPath = Path.Combine(unZippedDir, "[Content_Types].xml");
-            var registeredExtensions = ReadContentTypesXml(contentTypesPath);
-            File.Delete(contentTypesPath);
-
-            // Step 5: Create the VSIX package again
-            Package finalPackage = null;
-            try
-            {
-                finalPackage = Package.Open(zipPackagePath, FileMode.Create);
-                var allFiles = Directory.GetFiles(unZippedDir, "*", SearchOption.AllDirectories);
-
-                foreach (var file in allFiles)
-                {
-                    var uri = PackUriHelper.CreatePartUri(new Uri(file.Substring(unZippedDir.Length + 1), UriKind.Relative));
-                    var part = finalPackage.CreatePart(uri, GetMimeType(registeredExtensions, uri.OriginalString), CompressionOption.Maximum);
-
-                    if (part != null)
-                    {
-                        using (var sourceStream = File.OpenRead(file))
-                        {
-                            using (var outputStream = part.GetStream(FileMode.Create))
-                            {
-                                //sourceStream.CopyTo(outputStream);
-                                CopyStream(sourceStream, outputStream);
-                            }
-                        }
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                if (errorBuffer != null)
-                    errorBuffer.AppendLine(ex.Message).AppendLine(ex.StackTrace);
-
-                success = false;
-            }
-            finally
-            {
-                if (finalPackage != null)
-                    finalPackage.Close();
-            }
-
-            // Step 6: Rename zip file to vsix
-            string vsixPackagePath = Path.ChangeExtension(zipPackagePath, ".vsix");
-            File.Move(zipPackagePath, vsixPackagePath);
-            return success;
-        }
-
-        private static void CopyStream(Stream source, Stream output)
-        {
-            byte[] buffer = new byte[16 * 1024];
-            int bytesRead;
-
-            while ((bytesRead = source.Read(buffer, 0, buffer.Length)) > 0)
-            {
-                output.Write(buffer, 0, bytesRead);
-            }
-        }
-
-        private static string GetMimeType(Dictionary<string, string> registeredExtensions, string path)
-        {
-            // INFO: all extensions or parts belong to this dictionary as we rewrite exactly the same package as original one
-            // we could be in trouble if adding new type of files into it...
-            var ext = Path.GetExtension(path);
-            return string.IsNullOrEmpty(ext) ? registeredExtensions[path] : registeredExtensions[ext];
-        }
-
-        private static Dictionary<string, string> ReadContentTypesXml(string path)
-        {
-            var result = new Dictionary<string, string>();
-
-            if (File.Exists(path))
-            {
-                XmlDocument doc = new XmlDocument();
-                doc.Load(path);
-
-                // get extensions descriptions:
-                foreach (XmlElement node in doc.GetElementsByTagName("Default"))
-                {
-                    var ext = "." + node.GetAttribute("Extension");
-                    var type = node.GetAttribute("ContentType");
-                    result[ext] = type;
-                }
-
-                // get unrecognized paths descriptions:
-                foreach (XmlElement node in doc.GetElementsByTagName("Override"))
-                {
-                    var part = node.GetAttribute("PartName");
-                    var type = node.GetAttribute("ContentType");
-                    result[part] = type;
-                }
-            }
-
-            return result;
-        }
-
-        private static bool SignVsix(string vsixPackagePath, SignData arguments, StringBuilder outputBuffer, StringBuilder errorBuffer)
+        private static bool SignVsix(string vsixPackagePath, 
+                                     SignData arguments, 
+                                     StringBuilder outputBuffer, 
+                                     StringBuilder errorBuffer,
+                                     bool signContentInVsix = false)
         {
             if (arguments == null)
                 throw new ArgumentNullException("arguments");
@@ -240,6 +103,35 @@ namespace CodeTitans.Signature
                 var partsToSign = new List<Uri>();
                 foreach (var packagePart in package.GetParts())
                 {
+                    if (signContentInVsix)
+                    {
+                        var fileName = Path.GetFileName(packagePart.Uri.OriginalString);
+                        var name = Path.Combine(Path.GetTempPath(), fileName);
+                        var extension = Path.GetExtension(name);
+                        using (var stream = packagePart.GetStream(FileMode.Open, FileAccess.Read))
+                        {
+                            using (var fileStream = new FileStream(name, FileMode.Create))
+                            {
+                                stream.CopyTo(fileStream);
+                            }
+                        }
+                        if ((extension.Equals(".dll") || extension.Equals(".exe")) && !VerifyBinaryDigitalSignature(name))
+                        {
+                            if (!SignBinary(name, arguments, outputBuffer, errorBuffer))
+                            {
+                                return false;
+                            }
+
+                            using (var stream = packagePart.GetStream(FileMode.Open, FileAccess.Write))
+                            {
+                                using (var fileStream = new FileStream(name, FileMode.Open))
+                                {
+                                    fileStream.CopyTo(stream);
+                                }
+                            }
+                        }
+                    }
+                    
                     partsToSign.Add(packagePart.Uri);
                 }
 

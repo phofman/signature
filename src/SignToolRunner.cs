@@ -12,7 +12,7 @@ namespace CodeTitans.Signature
     {
         private const string VerifyDigitalSignatureCmd = "verify /pa \"{0}\"";
         private const string SignBinaryWithPfxCmd = "sign /fd \"{0}\" /t \"{1}\" /f \"{2}\" /p \"{3}\" \"{4}\"";
-        private const string SignBinaryWithCertCmd = "sign /fd \"{0}\" /sha1 \"{1}\" /s \"{2}\"{3} /t \"{4}\" \"{5}\"";
+        private const string SignBinaryWithCertCmd = "sign /fd \"{0}\" /sha1 \"{1}\" /s \"{2}\"{3} /a /t \"{4}\" \"{5}\"";
 
         private static string _signtoolPath;
 
